@@ -15,10 +15,13 @@
 """Middleware hooks"""
 
 import json
+import logging
 import pecan
 import pecan.hooks
 
 from sentinel.token import Token
+
+LOG = logging.getLogger(__name__)
 
 class ConfigHook(pecan.hooks.PecanHook):
     """Attaches a configuration object to requests"""
@@ -56,5 +59,13 @@ class TokenHook(pecan.hooks.PecanHook):
             # This will legitimately fault on token requests
             state.request.context['token'] = None
 
+class LoggerHook(pecan.hooks.PecanHook):
+    """Print out requests in the log"""
+
+    def on_route(self, state):
+        LOG.info('{} {}'.format(state.request.method, state.request.path))
+
+    def after(self, state):
+        LOG.info('{}'.format(state.response.status))
 
 # vi: ts=4 et:

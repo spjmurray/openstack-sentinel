@@ -34,6 +34,11 @@ class Whitelist(object):
             resource = resource.to_dict()
             return { k: resource[k] for k in resource if k in whitelist }
 
-        return map(whitelister, resources)
+        # Handle collections
+        if isinstance(resources, list):
+            return map(whitelister, resources)
+
+        # Or single resources
+        return whitelister(resources)
 
 # vi: ts=4 et:

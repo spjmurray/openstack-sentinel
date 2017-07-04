@@ -38,6 +38,7 @@ def get_app():
 
     app_hooks = [
         hooks.ConfigHook(conf),
+        hooks.LoggerHook(),
         hooks.DomainHook(),
         hooks.TokenHook(),
     ]
