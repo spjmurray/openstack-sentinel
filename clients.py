@@ -18,15 +18,17 @@ Simple wrappers around OpenStack client libraries
 
 from keystoneauth1 import session
 from keystoneauth1.identity import v3
-from novaclient import client as nc
 from keystoneclient.v3 import client as kc
+from novaclient import client as nc
+import pecan
 
 class Clients(object):
     """Obtain various OpenStack clients"""
 
     @staticmethod
-    def _session(conf):
+    def _session():
         """Creates an OpenStack session from configuration data"""
+        conf = pecan.request.context['conf']
         auth = v3.Password(auth_url=conf.get('keystone_authtoken', 'auth_uri'),
                            username=conf.get('keystone_authtoken', 'username'),
                            password=conf.get('keystone_authtoken', 'password'),
@@ -36,13 +38,13 @@ class Clients(object):
         return session.Session(auth=auth)
 
     @classmethod
-    def keystone(cls, conf):
+    def keystone(cls):
         """Creates a Keystone client"""
-        return kc.Client(session=cls._session(conf))
+        return kc.Client(session=cls._session())
 
     @classmethod
-    def nova(cls, conf):
+    def nova(cls):
         """Creates a Nova client"""
-        return nc.Client(2, session=cls._session(conf))
+        return nc.Client(2, session=cls._session())
 
 # vi: ts=4 et:

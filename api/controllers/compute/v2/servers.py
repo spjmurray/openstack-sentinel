@@ -39,7 +39,7 @@ def _scoped_projects():
     """Return a list of projects within our domain scope"""
 
     domain = pecan.request.context['domain']
-    keystone = Clients.keystone(pecan.request.context['conf'])
+    keystone = Clients.keystone()
     projects = keystone.projects.list()
 
     # Assumes that domains cannot be nested
@@ -58,7 +58,7 @@ def _scoped_servers():
         projects = [pecan.request.context['token'].project_id]
 
     # Must do a detailed search here as it returns the tenant_id field
-    nova = Clients.nova(pecan.request.context['conf'])
+    nova = Clients.nova()
     servers = nova.servers.list(search_opts={'all_tenants': 'True'})
 
     # Filter out only servers within the IdP domain scope
@@ -71,6 +71,7 @@ class ComputeV2ServersController(pecan.rest.RestController):
     def __init__(self):
         self._custom_actions = {
             'detail': ['GET'],
+            'metadata': ['GET'],
         }
 
     @pecan.expose('json')
@@ -94,5 +95,13 @@ class ComputeV2ServersController(pecan.rest.RestController):
         }
 
         return payload
+
+    @pecan.expose('json')
+    def metadata(self, server_id):
+        """Return metadata associated with an instance"""
+
+        # Required by Fog, but oddly not in novaclient.v2.servers
+        return { u'metadata': {} }
+
 
 # vi: ts=4 et:
