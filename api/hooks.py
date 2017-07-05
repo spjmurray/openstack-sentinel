@@ -15,9 +15,12 @@
 """Middleware hooks"""
 
 import json
+import keystoneauth1.exceptions
 import logging
 import pecan
 import pecan.hooks
+import webob
+import time
 
 from sentinel.token import Token
 
@@ -63,9 +66,27 @@ class LoggerHook(pecan.hooks.PecanHook):
     """Print out requests in the log"""
 
     def on_route(self, state):
-        LOG.info('{} {}'.format(state.request.method, state.request.path))
+        state.request.context['start'] = time.time()
+        #LOG.info('{} {}'.format(state.request.method, state.request.path))
 
     def after(self, state):
-        LOG.info('{}'.format(state.response.status))
+        delta = time.time() - state.request.context['start']
+        LOG.info('{} "{} {}" status: {} time: {}'.format(
+            state.request.client_addr,
+            state.request.method,
+            state.request.path,
+            state.response.status_code,
+            delta))
+
+class ExceptionHook(pecan.hooks.PecanHook):
+    """Catch exceptions"""
+
+    def on_error(self, state, exc):
+        if isinstance(exc, webob.exc.HTTPNotFound):
+            return
+        if issubclass(exc.__class__, keystoneauth1.exceptions.HttpError):
+            LOG.error('caught exception {}'.format(exc.message))
+            return webob.Response(exc.message, status=exc.http_status)
+        LOG.error('unhandled exception {}'.format(exc.__class__.__name__))
 
 # vi: ts=4 et:

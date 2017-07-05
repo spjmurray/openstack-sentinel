@@ -20,8 +20,8 @@ import pecan
 import pecan.decorators
 import pecan.rest
 
-from sentinel.whitelist import Whitelist
 from sentinel.clients import Clients
+from sentinel.whitelist import Whitelist
 
 LOG = logging.getLogger(__name__)
 
@@ -34,14 +34,15 @@ class IdentityV3UsersController(pecan.rest.RestController):
     def get_all(self):
         """Return a list of all users in the IdP domain"""
 
-        keystone = Clients.keystone(pecan.request.context['conf'])
+        keystone = Clients.keystone()
+
         users = keystone.users.list(domain=pecan.request.context['domain'])
 
         payload = {
             u'links': {
                 u'next': None,
                 u'previous': None,
-                u'self': pecan.request.application_url,
+                u'self': pecan.request.path_url,
             },
             u'users': Whitelist.apply(users),
         }
@@ -53,18 +54,14 @@ class IdentityV3UsersController(pecan.rest.RestController):
     def post(self):
         """Create a new user in the IdP domain"""
 
-        keystone = Clients.keystone(pecan.request.context['conf'])
+        keystone = Clients.keystone()
 
         # Hard code the user domain for the IdP
-        try:
-            user = keystone.users.create(pecan.request.json['user']['name'],
-                domain=pecan.request.context['domain'],
-                enabled=True)
-        except keystoneauth1.exceptions.HttpError as e:
-            pecan.abort(e.http_status, e.message)
+        user = keystone.users.create(pecan.request.json['user']['name'],
+                                     domain=pecan.request.context['domain'])
 
-        LOG.info('client domain {} created new user {}'.format(
-            pecan.request.context['domain'], user.id))
+        LOG.info('client {} created user {}'.format(
+            pecan.request.context['user'], user.id))
 
         payload = {
             u'user': Whitelist.apply(user),
@@ -77,14 +74,13 @@ class IdentityV3UsersController(pecan.rest.RestController):
     def get_one(self, user_id):
         """Return the specified user"""
 
-        keystone = Clients.keystone(pecan.request.context['conf'])
+        keystone = Clients.keystone()
+
         user = keystone.users.get(user_id)
 
         # Check the IdP is allowed to access this resource
         if user.domain_id != pecan.request.context['domain']:
-            LOG.warn('client domain {} not permitted to access user {}'.format(
-                pecan.request.context['domain'], user.id))
-            pecan.abort(403)
+            pecan.abort(403, 'unauthorized access a resource outside of your domain')
 
         payload = {
             u'user': Whitelist.apply(user),
@@ -96,19 +92,18 @@ class IdentityV3UsersController(pecan.rest.RestController):
     def delete(self, user_id):
         """Delete the specified user"""
 
-        keystone = Clients.keystone(pecan.request.context['conf'])
+        keystone = Clients.keystone()
+
         user = keystone.users.get(user_id)
 
         # Check the IdP is allowed to access this resource
         if user.domain_id != pecan.request.context['domain']:
-            LOG.warn('client domain {} not permitted to delete user {}'.format(
-                pecan.request.context['domain'], user.id))
-            pecan.abort(403)
+            pecan.abort(403, 'unauthorized access a resource outside of your domain')
 
         keystone.users.delete(user)
 
-        LOG.info('client domain {} deleted user {}'.format(
-            pecan.request.context['domain'], user.id))
+        LOG.info('client {} deleted user {}'.format(
+            pecan.request.context['user'], user.id))
 
         pecan.response.status = 204
 

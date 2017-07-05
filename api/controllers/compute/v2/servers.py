@@ -20,6 +20,7 @@ import pecan.decorators
 import pecan.rest
 
 from sentinel.clients import Clients
+from sentinel.scope import Scope
 from sentinel.whitelist import Whitelist
 
 
@@ -35,25 +36,13 @@ def _all_projects():
     return 'all_tenants' in pecan.request.GET
 
 
-def _scoped_projects():
-    """Return a list of projects within our domain scope"""
-
-    domain = pecan.request.context['domain']
-    keystone = Clients.keystone()
-    projects = keystone.projects.list()
-
-    # Assumes that domains cannot be nested
-    projects = filter(lambda x: x.domain_id == domain, projects)
-    return map(lambda x: x.id, projects)
-
-
 def _scoped_servers():
     """Return a detailed list of servers based on scoping requirements"""
 
     # If the client requested all projects return those within the
     # domain scope, else just that indicated by the token binding
     if _all_projects():
-        projects = _scoped_projects()
+        projects = Scope.projects()
     else:
         projects = [pecan.request.context['token'].project_id]
 
@@ -62,7 +51,7 @@ def _scoped_servers():
     servers = nova.servers.list(search_opts={'all_tenants': 'True'})
 
     # Filter out only servers within the IdP domain scope
-    return filter(lambda x: x.tenant_id in projects, servers)
+    return [x for x in servers if x.tenant_id in projects]
 
 
 class ComputeV2ServersController(pecan.rest.RestController):
@@ -81,7 +70,7 @@ class ComputeV2ServersController(pecan.rest.RestController):
 
         servers = _scoped_servers()
         payload = {
-            u'servers': map(lambda x: { u'id': x.id, u'name': x.name }, servers),
+            u'servers': [{ u'id': x.id, u'name': x.name } for x in servers],
         }
 
         return payload

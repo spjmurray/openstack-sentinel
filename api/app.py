@@ -41,6 +41,7 @@ def get_app():
         hooks.LoggerHook(),
         hooks.DomainHook(),
         hooks.TokenHook(),
+        hooks.ExceptionHook(),
     ]
 
     return pecan.make_app(

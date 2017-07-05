@@ -16,6 +16,7 @@ from datetime import datetime, timedelta
 import logging
 import pecan
 
+from sentinel.scope import Scope
 from sentinel.token import Token
 
 LOG = logging.getLogger(__name__)
@@ -34,8 +35,12 @@ class IdentityV3AuthController(object):
                 pecan.request.context['user'], project))
         except KeyError:
             token = Token()
-            LOG.info('Unscoped authentication request by {}'.format(
+            LOG.info('Domain scoped authentication request by {}'.format(
                 pecan.request.context['user']))
+
+        # Reject scoping to a project not in our domain
+        if token.project_id and token.project_id not in Scope.projects():
+            pecan.abort(404, 'project not in found in this domain')
 
         # Generate the response.  The official client library checks the time stamps
         # so these are required, Fog requires that the user has a project which it
