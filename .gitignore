@@ -1,2 +1,4 @@
 *.pyc
-ssl
+build
+dist
+sentinel.egg-info

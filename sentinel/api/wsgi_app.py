@@ -14,10 +14,6 @@
 
 """Main WSGI entry point"""
 
-import sys
-
-sys.path.append('/home/simon')
-
 from sentinel.api.app import get_app
 
 application = get_app()

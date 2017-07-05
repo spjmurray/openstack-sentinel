@@ -40,8 +40,9 @@ def _scoped_servers():
     """Return a detailed list of servers based on scoping requirements"""
 
     # If the client requested all projects return those within the
-    # domain scope, else just that indicated by the token binding
-    if _all_projects():
+    # domain scope, same applies for a domain scoped token, otherwise
+    # scope to the specifc project
+    if _all_projects() or not pecan.request.context['token'].project_id:
         projects = Scope.projects()
     else:
         projects = [pecan.request.context['token'].project_id]
@@ -89,8 +90,14 @@ class ComputeV2ServersController(pecan.rest.RestController):
     def metadata(self, server_id):
         """Return metadata associated with an instance"""
 
+        nova = Clients.nova()
+        server = nova.servers.get(server_id)
+
+        if server.tenant_id not in Scope.projects():
+            pecan.abort(403, 'unauthorized access a resource outside of your domain')
+
         # Required by Fog, but oddly not in novaclient.v2.servers
-        return { u'metadata': {} }
+        return { u'metadata': server.metadata }
 
 
 # vi: ts=4 et:
