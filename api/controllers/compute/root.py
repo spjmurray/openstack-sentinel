@@ -19,14 +19,7 @@ import pecan
 from sentinel.api.controllers.compute.v2 import root as v2
 
 class ComputeController(object):
-    @pecan.expose()
-    def _lookup(self, version, *remainder):
-        if version == 'v2':
-            # Expect a project ID as part of the URL
-            if not len(remainder):
-                pecan.abort(400)
-            pecan.request.context['project_id'] = remainder[0]
-            return v2.ComputeV2Controller(), remainder[1:]
-        pecan.abort(404)
+    def __init__(self):
+        self.v2 = v2.ComputeV2Controller()
 
 # vi: ts=4 et:

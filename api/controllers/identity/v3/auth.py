@@ -44,7 +44,7 @@ class IdentityV3AuthController(object):
         issued = datetime.now()
         expires = issued + timedelta(0, 0, 0, 0, 0, 1, 0)
         identity_base = '{}/identity/v3'.format(pecan.request.host_url)
-        compute_base = '{}/compute/v2/{}'.format(pecan.request.host_url, project)
+        compute_base = '{}/compute/v2'.format(pecan.request.host_url)
 
         payload = {
             'token': {

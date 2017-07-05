@@ -12,7 +12,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-"""Root controller for /compute/v2/%{tenant_id}/servers"""
+"""Root controller for /compute/v2/servers"""
 
 import oslo_utils.strutils
 import pecan

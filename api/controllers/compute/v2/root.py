@@ -12,7 +12,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-"""Root controller for /compute/v2/%{tenant_id}"""
+"""Root controller for /compute/v2"""
 
 from sentinel.api.controllers.compute.v2 import servers
 
