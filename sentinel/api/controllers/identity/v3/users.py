@@ -58,7 +58,10 @@ class IdentityV3UsersController(pecan.rest.RestController):
 
         # Hard code the user domain for the IdP
         user = keystone.users.create(pecan.request.json['user']['name'],
-                                     domain=pecan.request.context['domain'])
+                                     domain=pecan.request.context['domain'],
+                                     email=pecan.request.json['user'].get('email'),
+                                     description=pecan.request.json['user'].get('description'),
+                                     enabled=pecan.request.json['user'].get('enabled'))
 
         LOG.info('client %s created user %s', pecan.request.context['user'], user.id)
 
@@ -67,6 +70,30 @@ class IdentityV3UsersController(pecan.rest.RestController):
         }
 
         pecan.response.status = 201
+        return payload
+
+    @pecan.expose('json')
+    def patch(self, user_id):
+        """Update a user in the IdP domain"""
+
+        keystone = Clients.keystone()
+
+        user = keystone.users.get(user_id)
+
+        if user.domain_id != pecan.request.context['domain']:
+            pecan.abort(403, 'unauthorized access a resource outside of your domain')
+
+        # Deny the changing of domain, you could escape from the federated zone
+        user = keystone.users.update(user,
+                                     name=pecan.request.json['user'].get('name'),
+                                     email=pecan.request.json['user'].get('email'),
+                                     description=pecan.request.json['user'].get('description'),
+                                     enabled=pecan.request.json['user'].get('enabled'))
+
+        payload = {
+            u'user': Whitelist.apply(user),
+        }
+
         return payload
 
     @pecan.expose('json')

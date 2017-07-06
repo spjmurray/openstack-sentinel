@@ -17,20 +17,43 @@ from keystoneauth1.exceptions import http
 import sentinel.tests.functional.identity.base as base
 
 TEST_USER = 'test'
+TEST_USER_EMAIL = 'test@example.com'
+TEST_USER_DESCRIPTION = 'Sentinel Test User'
 
 class KeystoneUsersTestCase(base.KeystoneBaseTestCase):
 
-    def test_create_delete(self):
-        user = self.sentinel.users.create(TEST_USER)
+    def test_create(self):
+        user = self.sentinel.users.create(TEST_USER,
+                                          email=TEST_USER_EMAIL,
+                                          description=TEST_USER_DESCRIPTION)
         self.addCleanup(self.sentinel.users.delete, user)
         self.assertEqual(user.name, TEST_USER)
-
-    def test_user_create_conflict(self):
-        user = self.sentinel.users.create(TEST_USER)
-        self.addCleanup(self.sentinel.users.delete, user)
+        self.assertEqual(user.email, TEST_USER_EMAIL)
+        self.assertEqual(user.description, TEST_USER_DESCRIPTION)
+        self.assertEqual(user.enabled, True)
+        self.assertNotIn('domain', user.domain)
         self.assertRaises(http.Conflict, self.sentinel.users.create, TEST_USER)
 
-    def test_user_delete(self):
+    def test_update(self):
+        user = self.sentinel.users.create(TEST_USER)
+        self.addCleanup(self.sentinel.users.delete, user)
+        user = self.sentinel.users.update(user,
+                                          email=TEST_USER_EMAIL,
+                                          description=TEST_USER_DESCRIPTION,
+                                          enabled=False)
+        self.assertEqual(user.name, TEST_USER)
+        self.assertEqual(user.email, TEST_USER_EMAIL)
+        self.assertEqual(user.description, TEST_USER_DESCRIPTION)
+        self.assertEqual(user.enabled, False)
+        self.assertNotIn('domain', user.domain)
+
+    def test_get(self):
+        user = self.sentinel.users.create(TEST_USER)
+        self.addCleanup(self.sentinel.users.delete, user)
+        user = self.sentine.users.get(user)
+        self.assertNotIn('domain', user.domain)
+
+    def test_delete(self):
         user = self.sentinel.users.create(TEST_USER)
         self.sentinel.users.delete(user)
         self.assertRaises(http.NotFound, self.sentinel.users.delete, user)
