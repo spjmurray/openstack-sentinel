@@ -8,3 +8,7 @@ parties.
 ## Installation
 
 sudo pip install --prefix /usr/local/ .
+
+## Testing
+
+python -m testtools.run discover sentinel.tests.functional
