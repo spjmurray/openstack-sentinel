@@ -71,7 +71,7 @@ class ComputeV2ServersController(pecan.rest.RestController):
 
         servers = _scoped_servers()
         payload = {
-            u'servers': [{ u'id': x.id, u'name': x.name } for x in servers],
+            u'servers': [{u'id': x.id, u'name': x.name} for x in servers],
         }
 
         return payload
@@ -97,7 +97,7 @@ class ComputeV2ServersController(pecan.rest.RestController):
             pecan.abort(403, 'unauthorized access a resource outside of your domain')
 
         # Required by Fog, but oddly not in novaclient.v2.servers
-        return { u'metadata': server.metadata }
+        return {u'metadata': server.metadata}
 
 
 # vi: ts=4 et:

@@ -18,7 +18,7 @@ import inspect
 import pecan
 
 class Whitelist(object):
-    
+
     @staticmethod
     def apply(resources):
         # Get the calling module name, this will determine the whitelist key
@@ -32,11 +32,11 @@ class Whitelist(object):
 
         def whitelister(resource):
             resource = resource.to_dict()
-            return { k: resource[k] for k in resource if k in whitelist }
+            return {k: resource[k] for k in resource if k in whitelist}
 
         # Handle collections
         if isinstance(resources, list):
-            return map(whitelister, resources)
+            return [whitelister(x) for x in resources]
 
         # Or single resources
         return whitelister(resources)

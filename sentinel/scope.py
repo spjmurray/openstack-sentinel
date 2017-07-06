@@ -18,7 +18,7 @@ import pecan
 
 from sentinel.clients import Clients
 
-class Scope:
+class Scope(object):
     @staticmethod
     def projects():
         """Return a list of projects within our domain scope.  This is

@@ -16,24 +16,21 @@ from keystoneauth1.exceptions import http
 
 import sentinel.tests.functional.identity.base as base
 
-TEST_USER='test'
+TEST_USER = 'test'
 
 class KeystoneUsersTestCase(base.KeystoneBaseTestCase):
 
-    def testCreateDelete(self):
-        """Can create and delete new users"""
+    def test_create_delete(self):
         user = self.sentinel.users.create(TEST_USER)
         self.addCleanup(self.sentinel.users.delete, user)
         self.assertEqual(user.name, TEST_USER)
 
-    def testUserCreateConflict(self):
-        """Cannot redefine users"""
+    def test_user_create_conflict(self):
         user = self.sentinel.users.create(TEST_USER)
         self.addCleanup(self.sentinel.users.delete, user)
         self.assertRaises(http.Conflict, self.sentinel.users.create, TEST_USER)
 
-    def testUserDelete(self):
-        """Cannot delete non-existant users"""
+    def test_user_delete(self):
         user = self.sentinel.users.create(TEST_USER)
         self.sentinel.users.delete(user)
         self.assertRaises(http.NotFound, self.sentinel.users.delete, user)

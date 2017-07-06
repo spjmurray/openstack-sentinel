@@ -14,8 +14,8 @@
 
 """Controller for /identity/v3/users"""
 
-import keystoneauth1.exceptions
 import logging
+
 import pecan
 import pecan.decorators
 import pecan.rest
@@ -60,8 +60,7 @@ class IdentityV3UsersController(pecan.rest.RestController):
         user = keystone.users.create(pecan.request.json['user']['name'],
                                      domain=pecan.request.context['domain'])
 
-        LOG.info('client {} created user {}'.format(
-            pecan.request.context['user'], user.id))
+        LOG.info('client %s created user %s', pecan.request.context['user'], user.id)
 
         payload = {
             u'user': Whitelist.apply(user),
@@ -102,8 +101,7 @@ class IdentityV3UsersController(pecan.rest.RestController):
 
         keystone.users.delete(user)
 
-        LOG.info('client {} deleted user {}'.format(
-            pecan.request.context['user'], user.id))
+        LOG.info('client %s deleted user %s', pecan.request.context['user'], user.id)
 
         pecan.response.status = 204
 

@@ -14,8 +14,6 @@
 
 """Root controller for /compute"""
 
-import pecan
-
 from sentinel.api.controllers.compute.v2 import root as v2
 
 class ComputeController(object):

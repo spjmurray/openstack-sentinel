@@ -12,7 +12,7 @@ parties.
 For basic hacking you can probably just get away with installing it into one of
 python's global search paths.
 
-    sudo pip install --prefix /usr/local/ .
+    sudo -H pip install --upgrade --prefix /usr/local/ .
 
 ## dpkg
 
@@ -30,4 +30,10 @@ to streamline the process.
 
 ## Testing
 
-python -m testtools.run discover sentinel.tests.functional
+This shouldn't get any lower without good reason.
+
+    pylint sentinel
+
+This will always work.
+
+    python -m testtools.run discover sentinel.tests.functional

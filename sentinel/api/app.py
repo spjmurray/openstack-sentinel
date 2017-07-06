@@ -16,7 +16,6 @@
 
 import ConfigParser
 import logging
-import sys
 
 import pecan
 from sentinel.api import hooks

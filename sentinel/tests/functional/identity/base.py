@@ -27,12 +27,12 @@ class KeystoneBaseTestCase(testtools.TestCase):
         conf.read('/etc/sentinel/sentinel-test.conf')
 
         # Create a keystone client pointing at the actual SP instance
-        auth = v3.Password(auth_url=conf.get('keystone_authtoken', 'auth_uri'),
-                           username=conf.get('keystone_authtoken', 'username'),
-                           password=conf.get('keystone_authtoken', 'password'),
-                           user_domain_name=conf.get('keystone_authtoken', 'user_domain_name'),
-                           project_name=conf.get('keystone_authtoken', 'project_name'),
-                           project_domain_name=conf.get('keystone_authtoken', 'project_domain_name'))
+        required = ['auth_url', 'username', 'password', 'user_domain_name',
+                    'project_name', 'project_domain_name']
+
+        params = {x: conf.get('keystone_authtoken', x) for x in required}
+
+        auth = v3.Password(**params)
         sess = session.Session(auth=auth)
         self.keystone = client.Client(session=sess)
 

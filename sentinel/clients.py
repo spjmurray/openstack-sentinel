@@ -29,12 +29,13 @@ class Clients(object):
     def _session():
         """Creates an OpenStack session from configuration data"""
         conf = pecan.request.context['conf']
-        auth = v3.Password(auth_url=conf.get('keystone_authtoken', 'auth_uri'),
-                           username=conf.get('keystone_authtoken', 'username'),
-                           password=conf.get('keystone_authtoken', 'password'),
-                           user_domain_name=conf.get('keystone_authtoken', 'user_domain_name'),
-                           project_name=conf.get('keystone_authtoken', 'project_name'),
-                           project_domain_name=conf.get('keystone_authtoken', 'project_domain_name'))
+
+        required = ['auth_url', 'username', 'password', 'user_domain_name',
+                    'project_name', 'project_domain_name']
+
+        params = {x: conf.get('keystone_authtoken', x) for x in required}
+
+        auth = v3.Password(**params)
         return session.Session(auth=auth)
 
     @classmethod
