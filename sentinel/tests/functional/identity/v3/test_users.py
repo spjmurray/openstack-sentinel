@@ -31,7 +31,6 @@ class KeystoneUsersTestCase(base.KeystoneBaseTestCase):
         self.assertEqual(user.email, TEST_USER_EMAIL)
         self.assertEqual(user.description, TEST_USER_DESCRIPTION)
         self.assertEqual(user.enabled, True)
-        self.assertNotIn('domain', user.domain)
         self.assertRaises(http.Conflict, self.sentinel.users.create, TEST_USER)
 
     def test_update(self):
@@ -45,13 +44,11 @@ class KeystoneUsersTestCase(base.KeystoneBaseTestCase):
         self.assertEqual(user.email, TEST_USER_EMAIL)
         self.assertEqual(user.description, TEST_USER_DESCRIPTION)
         self.assertEqual(user.enabled, False)
-        self.assertNotIn('domain', user.domain)
 
     def test_get(self):
         user = self.sentinel.users.create(TEST_USER)
         self.addCleanup(self.sentinel.users.delete, user)
-        user = self.sentine.users.get(user)
-        self.assertNotIn('domain', user.domain)
+        user = self.sentinel.users.get(user)
 
     def test_delete(self):
         user = self.sentinel.users.create(TEST_USER)

@@ -83,7 +83,7 @@ class IdentityV3UsersController(pecan.rest.RestController):
         if user.domain_id != pecan.request.context['domain']:
             pecan.abort(403, 'unauthorized access a resource outside of your domain')
 
-        # Deny the changing of domain, you could escape from the federated zone
+        # Deny the changing of domain, this is normal behaviour
         user = keystone.users.update(user,
                                      name=pecan.request.json['user'].get('name'),
                                      email=pecan.request.json['user'].get('email'),
