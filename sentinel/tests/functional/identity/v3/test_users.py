@@ -14,11 +14,14 @@
 
 from keystoneauth1.exceptions import http
 
-import sentinel.tests.functional.identity.base as base
+from sentinel.tests.functional import matchers
+from sentinel.tests.functional.identity import base
 
 TEST_USER = 'test'
 TEST_USER_EMAIL = 'test@example.com'
 TEST_USER_DESCRIPTION = 'Sentinel Test User'
+
+SP_USER = 'sp_user'
 
 class KeystoneUsersTestCase(base.KeystoneBaseTestCase):
 
@@ -54,5 +57,14 @@ class KeystoneUsersTestCase(base.KeystoneBaseTestCase):
         user = self.sentinel.users.create(TEST_USER)
         self.sentinel.users.delete(user)
         self.assertRaises(http.NotFound, self.sentinel.users.delete, user)
+
+    def test_list(self):
+        sp_user = self.keystone.users.create(SP_USER)
+        self.addCleanup(self.keystone.users.delete, sp_user)
+        user = self.sentinel.users.create(TEST_USER)
+        self.addCleanup(self.sentinel.users.delete, user)
+        users = self.sentinel.users.list()
+        self.assertThat(user, matchers.IsInCollection(users))
+        self.assertThat(sp_user, matchers.IsNotInCollection(users))
 
 # vi: ts=4 et:
