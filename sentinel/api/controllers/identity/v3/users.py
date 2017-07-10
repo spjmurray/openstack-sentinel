@@ -73,6 +73,24 @@ class IdentityV3UsersController(pecan.rest.RestController):
         return payload
 
     @pecan.expose('json')
+    def get(self, user_id):
+        """Return the specified user"""
+
+        keystone = Clients.keystone()
+
+        user = keystone.users.get(user_id)
+
+        # Check the IdP is allowed to access this resource
+        if user.domain_id != pecan.request.context['domain']:
+            pecan.abort(403, 'unauthorized access a resource outside of your domain')
+
+        payload = {
+            u'user': Whitelist.apply(user),
+        }
+
+        return payload
+
+    @pecan.expose('json')
     def patch(self, user_id):
         """Update a user in the IdP domain"""
 
@@ -89,24 +107,6 @@ class IdentityV3UsersController(pecan.rest.RestController):
                                      email=pecan.request.json['user'].get('email'),
                                      description=pecan.request.json['user'].get('description'),
                                      enabled=pecan.request.json['user'].get('enabled'))
-
-        payload = {
-            u'user': Whitelist.apply(user),
-        }
-
-        return payload
-
-    @pecan.expose('json')
-    def get_one(self, user_id):
-        """Return the specified user"""
-
-        keystone = Clients.keystone()
-
-        user = keystone.users.get(user_id)
-
-        # Check the IdP is allowed to access this resource
-        if user.domain_id != pecan.request.context['domain']:
-            pecan.abort(403, 'unauthorized access a resource outside of your domain')
 
         payload = {
             u'user': Whitelist.apply(user),
