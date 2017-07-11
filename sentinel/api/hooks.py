@@ -69,14 +69,13 @@ class LoggerHook(pecan.hooks.PecanHook):
 
     def on_route(self, state):
         state.request.context['start'] = time.time()
-        #LOG.info('{} {}'.format(state.request.method, state.request.path))
 
     def after(self, state):
         delta = time.time() - state.request.context['start']
         LOG.info('%s "%s %s" status: %d time: %0.3f',
                  state.request.client_addr,
                  state.request.method,
-                 state.request.path,
+                 state.request.url,
                  state.response.status_code,
                  delta)
 

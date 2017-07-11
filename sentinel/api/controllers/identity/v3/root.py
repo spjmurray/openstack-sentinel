@@ -19,10 +19,12 @@ import pecan.decorators
 
 from sentinel.api.controllers.identity.v3 import auth
 from sentinel.api.controllers.identity.v3 import users
+from sentinel.api.controllers.identity.v3 import projects
 
 class IdentityV3Controller(object):
     def __init__(self):
         self.auth = auth.IdentityV3AuthController()
+        self.projects = projects.IdentityV3ProjectsController()
         self.users = users.IdentityV3UsersController()
 
     @pecan.expose('json')
