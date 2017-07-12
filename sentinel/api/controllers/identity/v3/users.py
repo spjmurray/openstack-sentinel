@@ -14,122 +14,68 @@
 
 """Controller for /identity/v3/users"""
 
-import logging
-
 import pecan
 import pecan.decorators
 import pecan.rest
 
+from sentinel import utils
 from sentinel.clients import Clients
 from sentinel.whitelist import Whitelist
-
-LOG = logging.getLogger(__name__)
 
 
 class IdentityV3UsersController(pecan.rest.RestController):
     """Controller for the users collection"""
 
+    collection = u'users'
+    resource = u'user'
+
     @pecan.expose('json')
     @pecan.decorators.accept_noncanonical
     def get_all(self):
-        """Return a list of all users in the IdP domain"""
-
         keystone = Clients.keystone()
-
-        users = keystone.users.list(domain=pecan.request.context['domain'])
-
-        payload = {
-            u'links': {
-                u'next': None,
-                u'previous': None,
-                u'self': pecan.request.path_url,
-            },
-            u'users': Whitelist.apply(users),
-        }
-
-        return payload
+        users = keystone.users.list(
+            domain=pecan.request.context['domain'])
+        return utils.render_with_links(self.collection, Whitelist.apply(users))
 
     @pecan.expose('json')
     @pecan.decorators.accept_noncanonical
     def post(self):
-        """Create a new user in the IdP domain"""
-
         keystone = Clients.keystone()
-
-        # Hard code the user domain for the IdP
-        user = keystone.users.create(pecan.request.json['user']['name'],
-                                     domain=pecan.request.context['domain'],
-                                     email=pecan.request.json['user'].get('email'),
-                                     description=pecan.request.json['user'].get('description'),
-                                     enabled=pecan.request.json['user'].get('enabled'))
-
-        LOG.info('client %s created user %s', pecan.request.context['user'], user.id)
-
-        payload = {
-            u'user': Whitelist.apply(user),
-        }
-
+        user = keystone.users.create(
+            pecan.request.json['user']['name'],
+            domain=pecan.request.context['domain'],
+            email=pecan.request.json['user'].get('email'),
+            description=pecan.request.json['user'].get('description'),
+            enabled=pecan.request.json['user'].get('enabled'))
         pecan.response.status = 201
-        return payload
+        return utils.render(self.resource, Whitelist.apply(user))
 
     @pecan.expose('json')
     def get(self, user_id):
-        """Return the specified user"""
-
         keystone = Clients.keystone()
-
         user = keystone.users.get(user_id)
-
-        # Check the IdP is allowed to access this resource
-        if user.domain_id != pecan.request.context['domain']:
-            pecan.abort(403, 'unauthorized access a resource outside of your domain')
-
-        payload = {
-            u'user': Whitelist.apply(user),
-        }
-
-        return payload
+        utils.check_permissions(user)
+        return utils.render(self.resource, Whitelist.apply(user))
 
     @pecan.expose('json')
     def patch(self, user_id):
-        """Update a user in the IdP domain"""
-
         keystone = Clients.keystone()
-
         user = keystone.users.get(user_id)
-
-        if user.domain_id != pecan.request.context['domain']:
-            pecan.abort(403, 'unauthorized access a resource outside of your domain')
-
-        # Deny the changing of domain, this is normal behaviour
-        user = keystone.users.update(user,
-                                     name=pecan.request.json['user'].get('name'),
-                                     email=pecan.request.json['user'].get('email'),
-                                     description=pecan.request.json['user'].get('description'),
-                                     enabled=pecan.request.json['user'].get('enabled'))
-
-        payload = {
-            u'user': Whitelist.apply(user),
-        }
-
-        return payload
+        utils.check_permissions(user)
+        user = keystone.users.update(
+            user,
+            name=pecan.request.json['user'].get('name'),
+            email=pecan.request.json['user'].get('email'),
+            description=pecan.request.json['user'].get('description'),
+            enabled=pecan.request.json['user'].get('enabled'))
+        return utils.render(self.resource, Whitelist.apply(user))
 
     @pecan.expose('json')
     def delete(self, user_id):
-        """Delete the specified user"""
-
         keystone = Clients.keystone()
-
         user = keystone.users.get(user_id)
-
-        # Check the IdP is allowed to access this resource
-        if user.domain_id != pecan.request.context['domain']:
-            pecan.abort(403, 'unauthorized access a resource outside of your domain')
-
+        utils.check_permissions(user)
         keystone.users.delete(user)
-
-        LOG.info('client %s deleted user %s', pecan.request.context['user'], user.id)
-
         pecan.response.status = 204
 
 
