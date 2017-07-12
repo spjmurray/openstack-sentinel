@@ -23,11 +23,55 @@ from sentinel.clients import Clients
 from sentinel.whitelist import Whitelist
 
 
+class IdentityV3GroupsUsersController(pecan.rest.RestController):
+    """Controller for interacting with group users"""
+
+    @pecan.expose('json')
+    def get(self, group_id):
+        keystone = Clients.keystone()
+        group = keystone.groups.get(group_id)
+        utils.check_permissions(group)
+        users = keystone.users.list(group=group)
+        return utils.render_with_links(
+            u'users',
+            Whitelist.apply(users, 'sentinel.api.controllers.identity.v3.users'))
+
+    @pecan.expose('json')
+    def put(self, group_id, user_id):
+        keystone = Clients.keystone()
+        user = keystone.users.get(user_id)
+        group = keystone.groups.get(group_id)
+        utils.check_permissions(user, group)
+        keystone.users.add_to_group(user, group)
+        pecan.response.status = 204
+
+    @pecan.expose('json')
+    def head(self, group_id, user_id):
+        keystone = Clients.keystone()
+        user = keystone.users.get(user_id)
+        group = keystone.groups.get(group_id)
+        utils.check_permissions(user, group)
+        keystone.users.check_in_group(user, group)
+        pecan.response.status = 204
+
+    @pecan.expose('json')
+    def delete(self, group_id, user_id):
+        keystone = Clients.keystone()
+        user = keystone.users.get(user_id)
+        group = keystone.groups.get(group_id)
+        utils.check_permissions(user, group)
+        keystone.users.remove_from_group(user, group)
+        pecan.response.status = 204
+
+
 class IdentityV3GroupsController(pecan.rest.RestController):
     """Controller for the groups collection"""
 
     collection = u'groups'
     resource = u'group'
+
+    def __init__(self):
+        self.users = IdentityV3GroupsUsersController()
 
     @pecan.expose('json')
     @pecan.decorators.accept_noncanonical

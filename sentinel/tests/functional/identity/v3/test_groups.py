@@ -59,4 +59,38 @@ class KeystoneGroupsTestCase(base.KeystoneBaseTestCase):
         self.assertThat(group, matchers.IsInCollection(groups))
         self.assertThat(sp_group, matchers.IsNotInCollection(groups))
 
+    def test_group_add_user(self):
+        user = self.sentinel.users.create(TEST_GROUP)
+        self.addCleanup(self.sentinel.users.delete, user)
+        group = self.sentinel.groups.create(TEST_GROUP)
+        self.addCleanup(self.sentinel.groups.delete, group)
+        self.assertIsNone(self.sentinel.users.add_to_group(user, group))
+
+    def def_group_remove_user(self):
+        user = self.sentinel.users.create(TEST_GROUP)
+        self.addCleanup(self.sentinel.users.delete, user)
+        group = self.sentinel.groups.create(TEST_GROUP)
+        self.addCleanup(self.sentinel.groups.delete, group)
+        self.assertIsNone(self.sentinel.users.add_to_group(user, group))
+        self.sentinel.users.remove_from_group(user, group)
+        self.assertRaises(http.NotFound, self.sentinel.users.remove_from_group, user, group)
+
+    def test_group_has_user(self):
+        user = self.sentinel.users.create(TEST_GROUP)
+        self.addCleanup(self.sentinel.users.delete, user)
+        group = self.sentinel.groups.create(TEST_GROUP)
+        self.addCleanup(self.sentinel.groups.delete, group)
+        self.assertRaises(http.NotFound, self.sentinel.users.check_in_group, user, group)
+        self.sentinel.users.add_to_group(user, group)
+        self.assertEqual(self.sentinel.users.check_in_group(user, group), True)
+
+    def test_group_list_users(self):
+        user = self.sentinel.users.create(TEST_GROUP)
+        self.addCleanup(self.sentinel.users.delete, user)
+        group = self.sentinel.groups.create(TEST_GROUP)
+        self.addCleanup(self.sentinel.groups.delete, group)
+        self.sentinel.users.add_to_group(user, group)
+        users = self.sentinel.users.list(group=group)
+        self.assertThat(user, matchers.IsInCollection(users))
+
 # vi: ts=4 et:

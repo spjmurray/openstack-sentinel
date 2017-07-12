@@ -14,10 +14,11 @@
 
 import pecan
 
-def check_permissions(resource):
+def check_permissions(*resources):
     """Check we have access to this resource or raise an error"""
-    if resource.domain_id != pecan.request.context['domain']:
-        pecan.abort(403, 'unauthorized access a resource outside of your domain')
+    for resource in resources:
+        if resource.domain_id != pecan.request.context['domain']:
+            pecan.abort(403, 'unauthorized access a resource outside of your domain')
 
 def render(entity, data):
     """Render a response for an entity type"""
