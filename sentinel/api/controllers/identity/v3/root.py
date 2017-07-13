@@ -20,6 +20,7 @@ import pecan.decorators
 from sentinel.api.controllers.identity.v3 import auth
 from sentinel.api.controllers.identity.v3 import groups
 from sentinel.api.controllers.identity.v3 import projects
+from sentinel.api.controllers.identity.v3 import roles
 from sentinel.api.controllers.identity.v3 import users
 
 class IdentityV3Controller(object):
@@ -27,6 +28,7 @@ class IdentityV3Controller(object):
         self.auth = auth.IdentityV3AuthController()
         self.groups = groups.IdentityV3GroupsController()
         self.projects = projects.IdentityV3ProjectsController()
+        self.roles = roles.IdentityV3RolesController()
         self.users = users.IdentityV3UsersController()
 
     @pecan.expose('json')
