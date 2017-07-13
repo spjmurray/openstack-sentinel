@@ -22,18 +22,34 @@ from sentinel.api import hooks
 
 LOG = logging.getLogger(__name__)
 
+
+class LogFilter(logging.Filter):
+    def filter(self, record):
+        try:
+            record.user = pecan.request.context.get('domain') or '-'
+        except AttributeError:
+            record.user = '-'
+        return True
+
+
 def get_app():
     """Load configuration, register middleware hooks and create the application"""
 
     conf = ConfigParser.ConfigParser()
     conf.read('/etc/sentinel/sentinel.conf')
 
-    logging.basicConfig(
-        filename='/var/log/sentinel/sentinel.log',
-        level=logging.INFO,
-        format='%(asctime)s.%(msecs)03d %(process)d %(levelname)s %(name)s %(message)s',
+    formater = logging.Formatter(
+        fmt = '%(asctime)s.%(msecs)03d %(process)d %(levelname)s %(name)s [%(user)s] %(message)s',
         datefmt='%Y-%m-%d %H:%M:%S')
-    LOG.info('Sentinel starting')
+
+    handler = logging.FileHandler('/var/log/sentinel/sentinel.log')
+    handler.setFormatter(formater)
+    handler.addFilter(LogFilter())
+
+    logging.getLogger().addHandler(handler)
+    logging.getLogger().setLevel(logging.INFO)
+
+    LOG.info('Sentinel starting ...')
 
     app_hooks = [
         hooks.ConfigHook(conf),
