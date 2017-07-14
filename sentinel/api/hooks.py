@@ -17,6 +17,7 @@
 import json
 import logging
 import time
+import traceback
 
 import keystoneauth1.exceptions
 import pecan
@@ -89,5 +90,6 @@ class ExceptionHook(pecan.hooks.PecanHook):
             LOG.error('caught exception %s', exc.message)
             return webob.Response(exc.message, status=exc.http_status)
         LOG.error('unhandled exception %s', exc.__class__.__name__)
+        LOG.error('%s', traceback.format_exc(exc))
 
 # vi: ts=4 et:

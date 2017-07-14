@@ -22,12 +22,117 @@ from sentinel import utils
 from sentinel.clients import Clients
 from sentinel.whitelist import Whitelist
 
+class IdentityV3ProjectsUsersRolesController(pecan.rest.RestController):
+    """Controller for project-user roles"""
+
+    @pecan.expose('json')
+    @pecan.decorators.accept_noncanonical
+    def get_all(self, project_id, user_id):
+        keystone = Clients.keystone()
+        project = keystone.projects.get(project_id)
+        user = keystone.users.get(user_id)
+        roles = keystone.roles.list(user=user, project=project)
+        return utils.render_with_links(
+            u'roles',
+            Whitelist.apply(roles, 'sentinel.api.controllers.identity.v3.roles'))
+
+    @pecan.expose('json')
+    def put(self, project_id, user_id, role_id):
+        keystone = Clients.keystone()
+        project = keystone.projects.get(project_id)
+        user = keystone.users.get(user_id)
+        role = keystone.roles.get(role_id)
+        keystone.roles.grant(role, user=user, project=project)
+        pecan.response.status = 204
+
+    @pecan.expose('json')
+    def head(self, project_id, user_id, role_id):
+        keystone = Clients.keystone()
+        project = keystone.projects.get(project_id)
+        user = keystone.users.get(user_id)
+        role = keystone.roles.get(role_id)
+        keystone.roles.check(role, user=user, project=project)
+        pecan.response.status = 204
+
+    @pecan.expose('json')
+    def delete(self, project_id, user_id, role_id):
+        keystone = Clients.keystone()
+        project = keystone.projects.get(project_id)
+        user = keystone.users.get(user_id)
+        role = keystone.roles.get(role_id)
+        keystone.roles.revoke(role, user=user, project=project)
+        pecan.response.status = 204
+
+
+class IdentityV3ProjectsUsersController(pecan.rest.RestController):
+    def __init__(self):
+        self.roles = IdentityV3ProjectsUsersRolesController()
+
+    def get(self, project_id, user_id):
+        # Required for routing
+        pass
+
+
+class IdentityV3ProjectsGroupsRolesController(pecan.rest.RestController):
+    """Controller for project-group roles"""
+
+    @pecan.expose('json')
+    @pecan.decorators.accept_noncanonical
+    def get_all(self, project_id, group_id):
+        keystone = Clients.keystone()
+        project = keystone.projects.get(project_id)
+        group = keystone.groups.get(group_id)
+        roles = keystone.roles.list(group=group, project=project)
+        return utils.render_with_links(
+            u'roles',
+            Whitelist.apply(roles, 'sentinel.api.controllers.identity.v3.roles'))
+
+    @pecan.expose('json')
+    def put(self, project_id, group_id, role_id):
+        keystone = Clients.keystone()
+        project = keystone.projects.get(project_id)
+        group = keystone.groups.get(group_id)
+        role = keystone.roles.get(role_id)
+        keystone.roles.grant(role, group=group, project=project)
+        pecan.response.status = 204
+
+    @pecan.expose('json')
+    def head(self, project_id, group_id, role_id):
+        keystone = Clients.keystone()
+        project = keystone.projects.get(project_id)
+        group = keystone.groups.get(group_id)
+        role = keystone.roles.get(role_id)
+        keystone.roles.check(role, group=group, project=project)
+        pecan.response.status = 204
+
+    @pecan.expose('json')
+    def delete(self, project_id, group_id, role_id):
+        keystone = Clients.keystone()
+        project = keystone.projects.get(project_id)
+        group = keystone.groups.get(group_id)
+        role = keystone.roles.get(role_id)
+        keystone.roles.revoke(role, group=group, project=project)
+        pecan.response.status = 204
+
+
+class IdentityV3ProjectsGroupsController(pecan.rest.RestController):
+    def __init__(self):
+        self.roles = IdentityV3ProjectsGroupsRolesController()
+
+    def get(self, project_id, group_id):
+        # Required for routing
+        pass
+
 
 class IdentityV3ProjectsController(pecan.rest.RestController):
     """Controller for the projects collection"""
 
     collection = u'projects'
     resource = u'project'
+
+    def __init__(self):
+        self.groups = IdentityV3ProjectsGroupsController()
+        self.users = IdentityV3ProjectsUsersController()
 
     @pecan.expose('json')
     @pecan.decorators.accept_noncanonical
