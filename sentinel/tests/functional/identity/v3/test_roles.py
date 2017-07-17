@@ -15,6 +15,7 @@
 from keystoneauth1.exceptions import http
 
 from sentinel.tests.functional import matchers
+from sentinel.tests.functional import client_fixtures as fixtures
 from sentinel.tests.functional.identity import base
 
 class KeystoneRolesTestCase(base.KeystoneBaseTestCase):
@@ -25,76 +26,42 @@ class KeystoneRolesTestCase(base.KeystoneBaseTestCase):
         self.assertNotIn('admin', [r.name for r in roles])
 
     def test_user_role_grant(self):
-        user = self.sentinel.users.create('test_user')
-        self.addCleanup(self.sentinel.users.delete, user)
-        project = self.sentinel.projects.create('test_project', 'test_domain')
-        self.addCleanup(self.sentinel.projects.delete, project)
-        roles = self.sentinel.roles.list()
-        self.sentinel.roles.grant(roles[0], user=user, project=project)
+        user = self.useFixture(fixtures.User(self.sentinel))
+        project = self.useFixture(fixtures.Project(self.sentinel))
+        role = self.useFixture(fixtures.Role(self.sentinel))
+        self.sentinel.roles.grant(role.entity, user=user.entity, project=project.entity)
 
     def test_user_role_check(self):
-        user = self.sentinel.users.create('test_user')
-        self.addCleanup(self.sentinel.users.delete, user)
-        project = self.sentinel.projects.create('test_project', 'test_domain')
-        self.addCleanup(self.sentinel.projects.delete, project)
-        roles = self.sentinel.roles.list()
-        self.sentinel.roles.grant(roles[0], user=user, project=project)
-        self.sentinel.roles.check(roles[0], user=user, project=project)
+        grant = self.useFixture(fixtures.UserProjectGrant(self.sentinel))
+        self.sentinel.roles.check(grant.role.entity, user=grant.user.entity, project=grant.project.entity)
 
     def test_user_role_revoke(self):
-        user = self.sentinel.users.create('test_user')
-        self.addCleanup(self.sentinel.users.delete, user)
-        project = self.sentinel.projects.create('test_project', 'test_domain')
-        self.addCleanup(self.sentinel.projects.delete, project)
-        roles = self.sentinel.roles.list()
-        self.sentinel.roles.grant(roles[0], user=user, project=project)
-        self.sentinel.roles.revoke(roles[0], user=user, project=project)
+        grant = self.useFixture(fixtures.UserProjectGrant(self.sentinel))
+        self.sentinel.roles.revoke(grant.role.entity, user=grant.user.entity, project=grant.project.entity)
 
     def test_user_role_list(self):
-        user = self.sentinel.users.create('test_user')
-        self.addCleanup(self.sentinel.users.delete, user)
-        project = self.sentinel.projects.create('test_project', 'test_domain')
-        self.addCleanup(self.sentinel.projects.delete, project)
-        roles = self.sentinel.roles.list()
-        self.sentinel.roles.grant(roles[0], user=user, project=project)
-        new_roles = self.sentinel.roles.list(user=user, project=project)
-        self.assertThat(roles[0], matchers.IsInCollection(new_roles))
+        grant = self.useFixture(fixtures.UserProjectGrant(self.sentinel))
+        roles = self.sentinel.roles.list(user=grant.user.entity, project=grant.project.entity)
+        self.assertThat(grant.role.entity, matchers.IsInCollection(roles))
 
     def test_group_role_grant(self):
-        group = self.sentinel.groups.create('test_group')
-        self.addCleanup(self.sentinel.groups.delete, group)
-        project = self.sentinel.projects.create('test_project', 'test_domain')
-        self.addCleanup(self.sentinel.projects.delete, project)
-        roles = self.sentinel.roles.list()
-        self.sentinel.roles.grant(roles[0], group=group, project=project)
+        group = self.useFixture(fixtures.Group(self.sentinel))
+        project = self.useFixture(fixtures.Project(self.sentinel))
+        role = self.useFixture(fixtures.Role(self.sentinel))
+        self.sentinel.roles.grant(role.entity, group=group.entity, project=project.entity)
 
     def test_group_role_check(self):
-        group = self.sentinel.groups.create('test_group')
-        self.addCleanup(self.sentinel.groups.delete, group)
-        project = self.sentinel.projects.create('test_project', 'test_domain')
-        self.addCleanup(self.sentinel.projects.delete, project)
-        roles = self.sentinel.roles.list()
-        self.sentinel.roles.grant(roles[0], group=group, project=project)
-        self.sentinel.roles.check(roles[0], group=group, project=project)
+        grant = self.useFixture(fixtures.GroupProjectGrant(self.sentinel))
+        self.sentinel.roles.check(grant.role.entity, group=grant.group.entity, project=grant.project.entity)
 
     def test_group_role_revoke(self):
-        group = self.sentinel.groups.create('test_group')
-        self.addCleanup(self.sentinel.groups.delete, group)
-        project = self.sentinel.projects.create('test_project', 'test_domain')
-        self.addCleanup(self.sentinel.projects.delete, project)
-        roles = self.sentinel.roles.list()
-        self.sentinel.roles.grant(roles[0], group=group, project=project)
-        self.sentinel.roles.revoke(roles[0], group=group, project=project)
+        grant = self.useFixture(fixtures.GroupProjectGrant(self.sentinel))
+        self.sentinel.roles.revoke(grant.role.entity, group=grant.group.entity, project=grant.project.entity)
 
     def test_group_role_list(self):
-        group = self.sentinel.groups.create('test_group')
-        self.addCleanup(self.sentinel.groups.delete, group)
-        project = self.sentinel.projects.create('test_project', 'test_domain')
-        self.addCleanup(self.sentinel.projects.delete, project)
-        roles = self.sentinel.roles.list()
-        self.sentinel.roles.grant(roles[0], group=group, project=project)
-        new_roles = self.sentinel.roles.list(group=group, project=project)
-        self.assertThat(roles[0], matchers.IsInCollection(new_roles))
+        grant = self.useFixture(fixtures.GroupProjectGrant(self.sentinel))
+        roles = self.sentinel.roles.list(group=grant.group.entity, project=grant.project.entity)
+        self.assertThat(grant.role.entity, matchers.IsInCollection(roles))
 
 # vi: ts=4 et:
 

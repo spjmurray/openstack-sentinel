@@ -15,6 +15,7 @@
 from keystoneauth1.exceptions import http
 
 from sentinel.tests.functional import matchers
+from sentinel.tests.functional import client_fixtures as fixtures
 from sentinel.tests.functional.identity import base
 
 TEST_USER = 'test'
@@ -37,9 +38,9 @@ class KeystoneUsersTestCase(base.KeystoneBaseTestCase):
         self.assertRaises(http.Conflict, self.sentinel.users.create, TEST_USER)
 
     def test_update(self):
-        user = self.sentinel.users.create(TEST_USER)
-        self.addCleanup(self.sentinel.users.delete, user)
-        user = self.sentinel.users.update(user,
+        user = self.useFixture(fixtures.User(self.sentinel))
+        user = self.sentinel.users.update(user.entity,
+                                          name=TEST_USER,
                                           email=TEST_USER_EMAIL,
                                           description=TEST_USER_DESCRIPTION,
                                           enabled=False)
@@ -49,9 +50,8 @@ class KeystoneUsersTestCase(base.KeystoneBaseTestCase):
         self.assertEqual(user.enabled, False)
 
     def test_get(self):
-        user = self.sentinel.users.create(TEST_USER)
-        self.addCleanup(self.sentinel.users.delete, user)
-        user = self.sentinel.users.get(user)
+        user = self.useFixture(fixtures.User(self.sentinel))
+        self.sentinel.users.get(user.entity)
 
     def test_delete(self):
         user = self.sentinel.users.create(TEST_USER)
@@ -59,12 +59,10 @@ class KeystoneUsersTestCase(base.KeystoneBaseTestCase):
         self.assertRaises(http.NotFound, self.sentinel.users.delete, user)
 
     def test_list(self):
-        sp_user = self.keystone.users.create(SP_USER)
-        self.addCleanup(self.keystone.users.delete, sp_user)
-        user = self.sentinel.users.create(TEST_USER)
-        self.addCleanup(self.sentinel.users.delete, user)
+        sp_user = self.useFixture(fixtures.User(self.keystone))
+        user = self.useFixture(fixtures.User(self.sentinel))
         users = self.sentinel.users.list()
-        self.assertThat(user, matchers.IsInCollection(users))
-        self.assertThat(sp_user, matchers.IsNotInCollection(users))
+        self.assertThat(user.entity, matchers.IsInCollection(users))
+        self.assertThat(sp_user.entity, matchers.IsNotInCollection(users))
 
 # vi: ts=4 et:
