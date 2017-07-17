@@ -70,7 +70,7 @@ class IdentityV3ProjectsUsersController(pecan.rest.RestController):
 
     def get(self, project_id, user_id):
         # Required for routing
-        pass
+        pecan.response.status = 404
 
 
 class IdentityV3ProjectsGroupsRolesController(pecan.rest.RestController):
@@ -121,7 +121,7 @@ class IdentityV3ProjectsGroupsController(pecan.rest.RestController):
 
     def get(self, project_id, group_id):
         # Required for routing
-        pass
+        pecan.response.status = 404
 
 
 class IdentityV3ProjectsController(pecan.rest.RestController):
