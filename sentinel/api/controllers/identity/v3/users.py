@@ -29,6 +29,12 @@ class IdentityV3UsersController(pecan.rest.RestController):
     collection = u'users'
     resource = u'user'
 
+    def __init__(self):
+        self._custom_actions = {
+            'groups': ['GET'],
+            'projects': ['GET'],
+        }
+
     @pecan.expose('json')
     @pecan.decorators.accept_noncanonical
     def get_all(self):
@@ -78,5 +84,20 @@ class IdentityV3UsersController(pecan.rest.RestController):
         keystone.users.delete(user)
         pecan.response.status = 204
 
+    @pecan.expose('json')
+    def groups(self, user_id):
+        keystone = Clients.keystone()
+        user = keystone.users.get(user_id)
+        utils.check_permissions(user)
+        groups = keystone.groups.list(user=user, domain=pecan.request.context['domain'])
+        return utils.render_with_links(u'groups', Whitelist.apply(groups, 'sentinel.api.controllers.identity.v3.groups'))
+
+    @pecan.expose('json')
+    def projects(self, user_id):
+        keystone = Clients.keystone()
+        user = keystone.users.get(user_id)
+        utils.check_permissions(user)
+        projects = keystone.projects.list(user=user, domain=pecan.request.context['domain'])
+        return utils.render_with_links(u'projects', Whitelist.apply(projects, 'sentinel.api.controllers.identity.v3.projects'))
 
 # vi: ts=4 et:

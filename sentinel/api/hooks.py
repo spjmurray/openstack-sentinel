@@ -86,10 +86,11 @@ class ExceptionHook(pecan.hooks.PecanHook):
     def on_error(self, state, exc):
         if isinstance(exc, webob.exc.HTTPNotFound):
             return
-        if issubclass(exc.__class__, keystoneauth1.exceptions.HttpError):
-            LOG.error('caught exception %s', exc.message)
-            return webob.Response(exc.message, status=exc.http_status)
-        LOG.error('unhandled exception %s', exc.__class__.__name__)
+
+        LOG.error('Exception %s: %s', exc.__class__.__name__, exc.message)
         LOG.error('%s', traceback.format_exc(exc))
+
+        if issubclass(exc.__class__, keystoneauth1.exceptions.HttpError):
+            return webob.Response(exc.message, status=exc.http_status)
 
 # vi: ts=4 et:

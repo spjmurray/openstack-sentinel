@@ -65,4 +65,14 @@ class KeystoneUsersTestCase(base.KeystoneBaseTestCase):
         self.assertThat(user.entity, matchers.IsInCollection(users))
         self.assertThat(sp_user.entity, matchers.IsNotInCollection(users))
 
+    def test_group_list(self):
+        group_user = self.useFixture(fixtures.GroupUser(self.sentinel))
+        groups = self.sentinel.groups.list(user=group_user.user.entity)
+        self.assertThat(group_user.group.entity, matchers.IsInCollection(groups))
+
+    def test_project_list(self):
+        grant = self.useFixture(fixtures.UserProjectGrant(self.sentinel))
+        projects = self.sentinel.projects.list(user=grant.user.entity)
+        self.assertThat(grant.project.entity, matchers.IsInCollection(projects))
+
 # vi: ts=4 et:
