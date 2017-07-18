@@ -32,6 +32,7 @@ class IdentityV3ProjectsUsersRolesController(BaseController):
     def get_all(self, project_id, user_id):
         project = self.identity.projects.get(project_id)
         user = self.identity.users.get(user_id)
+        utils.check_permissions(project, user)
         roles = self.identity.roles.list(user=user, project=project)
         return self.format_collection(roles)
 
@@ -40,6 +41,7 @@ class IdentityV3ProjectsUsersRolesController(BaseController):
         project = self.identity.projects.get(project_id)
         user = self.identity.users.get(user_id)
         role = self.identity.roles.get(role_id)
+        utils.check_permissions(project, user, role)
         self.identity.roles.grant(role, user=user, project=project)
         pecan.response.status = 204
 
@@ -48,6 +50,7 @@ class IdentityV3ProjectsUsersRolesController(BaseController):
         project = self.identity.projects.get(project_id)
         user = self.identity.users.get(user_id)
         role = self.identity.roles.get(role_id)
+        utils.check_permissions(project, user, role)
         self.identity.roles.check(role, user=user, project=project)
         pecan.response.status = 204
 
@@ -56,6 +59,7 @@ class IdentityV3ProjectsUsersRolesController(BaseController):
         project = self.identity.projects.get(project_id)
         user = self.identity.users.get(user_id)
         role = self.identity.roles.get(role_id)
+        utils.check_permissions(project, user, role)
         self.identity.roles.revoke(role, user=user, project=project)
         pecan.response.status = 204
 
@@ -82,6 +86,7 @@ class IdentityV3ProjectsGroupsRolesController(BaseController):
     def get_all(self, project_id, group_id):
         project = self.identity.projects.get(project_id)
         group = self.identity.groups.get(group_id)
+        utils.check_permissions(project, group)
         roles = self.identity.roles.list(group=group, project=project)
         return self.format_collection(roles)
 
@@ -90,6 +95,7 @@ class IdentityV3ProjectsGroupsRolesController(BaseController):
         project = self.identity.projects.get(project_id)
         group = self.identity.groups.get(group_id)
         role = self.identity.roles.get(role_id)
+        utils.check_permissions(project, group, role)
         self.identity.roles.grant(role, group=group, project=project)
         pecan.response.status = 204
 
@@ -98,6 +104,7 @@ class IdentityV3ProjectsGroupsRolesController(BaseController):
         project = self.identity.projects.get(project_id)
         group = self.identity.groups.get(group_id)
         role = self.identity.roles.get(role_id)
+        utils.check_permissions(project, group, role)
         self.identity.roles.check(role, group=group, project=project)
         pecan.response.status = 204
 
@@ -106,6 +113,7 @@ class IdentityV3ProjectsGroupsRolesController(BaseController):
         project = self.identity.projects.get(project_id)
         group = self.identity.groups.get(group_id)
         role = self.identity.roles.get(role_id)
+        utils.check_permissions(project, group, role)
         self.identity.roles.revoke(role, group=group, project=project)
         pecan.response.status = 204
 
