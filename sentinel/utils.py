@@ -20,23 +20,4 @@ def check_permissions(*resources):
         if resource.domain_id != pecan.request.context['domain']:
             pecan.abort(403, 'unauthorized access a resource outside of your domain')
 
-def render(entity, data):
-    """Render a response for an entity type"""
-    payload = {
-        entity: data,
-    }
-    return payload
-
-def render_with_links(entity, data):
-    """Render a response for an entity type with links"""
-    payload = {
-        u'links': {
-            u'next': None,
-            u'previous': None,
-            u'self': pecan.request.path_url,
-        },
-        entity: data,
-    }
-    return payload
-
 # vi: ts=4 et:

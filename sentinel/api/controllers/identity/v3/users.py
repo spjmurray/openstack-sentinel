@@ -16,14 +16,13 @@
 
 import pecan
 import pecan.decorators
-import pecan.rest
 
 from sentinel import utils
+from sentinel.api.controllers.base import BaseController
 from sentinel.clients import Clients
-from sentinel.whitelist import Whitelist
 
 
-class IdentityV3UsersController(pecan.rest.RestController):
+class IdentityV3UsersController(BaseController):
     """Controller for the users collection"""
 
     collection = u'users'
@@ -41,7 +40,7 @@ class IdentityV3UsersController(pecan.rest.RestController):
         keystone = Clients.keystone()
         users = keystone.users.list(
             domain=pecan.request.context['domain'])
-        return utils.render_with_links(self.collection, Whitelist.apply(users))
+        return self.format_collection(users)
 
     @pecan.expose('json')
     @pecan.decorators.accept_noncanonical
@@ -54,14 +53,14 @@ class IdentityV3UsersController(pecan.rest.RestController):
             description=pecan.request.json['user'].get('description'),
             enabled=pecan.request.json['user'].get('enabled'))
         pecan.response.status = 201
-        return utils.render(self.resource, Whitelist.apply(user))
+        return self.format_resource(user)
 
     @pecan.expose('json')
     def get(self, user_id):
         keystone = Clients.keystone()
         user = keystone.users.get(user_id)
         utils.check_permissions(user)
-        return utils.render(self.resource, Whitelist.apply(user))
+        return self.format_resource(user)
 
     @pecan.expose('json')
     def patch(self, user_id):
@@ -74,7 +73,7 @@ class IdentityV3UsersController(pecan.rest.RestController):
             email=pecan.request.json['user'].get('email'),
             description=pecan.request.json['user'].get('description'),
             enabled=pecan.request.json['user'].get('enabled'))
-        return utils.render(self.resource, Whitelist.apply(user))
+        return self.format_resource(user)
 
     @pecan.expose('json')
     def delete(self, user_id):
@@ -90,7 +89,7 @@ class IdentityV3UsersController(pecan.rest.RestController):
         user = keystone.users.get(user_id)
         utils.check_permissions(user)
         groups = keystone.groups.list(user=user, domain=pecan.request.context['domain'])
-        return utils.render_with_links(u'groups', Whitelist.apply(groups, 'sentinel.api.controllers.identity.v3.groups'))
+        return self.format_collection(groups, resource=u'group', collection=u'groups')
 
     @pecan.expose('json')
     def projects(self, user_id):
@@ -98,6 +97,6 @@ class IdentityV3UsersController(pecan.rest.RestController):
         user = keystone.users.get(user_id)
         utils.check_permissions(user)
         projects = keystone.projects.list(user=user, domain=pecan.request.context['domain'])
-        return utils.render_with_links(u'projects', Whitelist.apply(projects, 'sentinel.api.controllers.identity.v3.projects'))
+        return self.format_collection(projects, resource=u'project', collection=u'projects')
 
 # vi: ts=4 et:

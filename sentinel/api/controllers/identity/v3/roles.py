@@ -16,13 +16,13 @@
 
 import pecan
 import pecan.decorators
-import pecan.rest
 
 from sentinel import utils
+from sentinel.api.controllers.base import BaseController
 from sentinel.clients import Clients
-from sentinel.whitelist import Whitelist
 
-class IdentityV3RolesController(pecan.rest.RestController):
+
+class IdentityV3RolesController(BaseController):
     """Controller for the roles collection"""
 
     collection = u'roles'
@@ -34,14 +34,14 @@ class IdentityV3RolesController(pecan.rest.RestController):
         keystone = Clients.keystone()
         roles = keystone.roles.list(
             domain_id=pecan.request.context['domain'])
-        return utils.render_with_links(self.collection, Whitelist.apply(roles))
+        return self.format_collection(roles)
 
     @pecan.expose('json')
     def get(self, role_id):
         keystone = Clients.keystone()
         role = keystone.roles.get(role_id)
         utils.check_permissions(role)
-        return utils.render(self.resource, Whitelist.apply(role))
+        return self.format_resource(role)
 
 
 # vi: ts=4 et:

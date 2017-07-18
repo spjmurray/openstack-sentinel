@@ -20,18 +20,8 @@ import pecan
 class Whitelist(object):
 
     @staticmethod
-    def apply(resources, schema=None):
-        if schema:
-            whitelist = pecan.request.context['conf'].get('whitelist', schema)
-        else:
-            # Get the calling module name, this will determine the whitelist key
-            # to extract from the configuration
-            frame = inspect.stack()[1]
-            module = inspect.getmodule(frame[0])
-            name = module.__name__
-
-            # Load the whitelist
-            whitelist = pecan.request.context['conf'].get('whitelist', name)
+    def apply(resources, name):
+        whitelist = pecan.request.context['conf'].get('whitelist', name)
 
         def whitelister(resource):
             resource = resource.to_dict()

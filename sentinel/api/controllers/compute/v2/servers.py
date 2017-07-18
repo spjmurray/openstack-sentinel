@@ -17,11 +17,10 @@
 import oslo_utils.strutils
 import pecan
 import pecan.decorators
-import pecan.rest
 
+from sentinel.api.controllers.base import BaseController
 from sentinel.clients import Clients
 from sentinel.scope import Scope
-from sentinel.whitelist import Whitelist
 
 
 def _all_projects():
@@ -55,8 +54,11 @@ def _scoped_servers():
     return [x for x in servers if x.tenant_id in projects]
 
 
-class ComputeV2ServersController(pecan.rest.RestController):
+class ComputeV2ServersController(BaseController):
     """Basic REST controller for server access"""
+
+    collection = u'servers'
+    resource = u'server'
 
     def __init__(self):
         self._custom_actions = {
@@ -70,21 +72,13 @@ class ComputeV2ServersController(pecan.rest.RestController):
         """Return a list of servers scoped to the domain/project"""
 
         servers = _scoped_servers()
-        payload = {
-            u'servers': [{u'id': x.id, u'name': x.name} for x in servers],
-        }
-
-        return payload
+        servers = [{u'id': x.id, u'name': x.name} for x in servers]
+        return self.format_collection(servers)
 
     @pecan.expose('json')
     def detail(self):
-        """Return a detailed list of servers scoped to the domain/project"""
-
-        payload = {
-            u'servers': Whitelist.apply(_scoped_servers()),
-        }
-
-        return payload
+        servers = _scoped_servers()
+        return self.format_collection(servers)
 
     @pecan.expose('json')
     def metadata(self, server_id):

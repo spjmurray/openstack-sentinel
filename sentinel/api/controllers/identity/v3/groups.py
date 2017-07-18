@@ -16,25 +16,26 @@
 
 import pecan
 import pecan.decorators
-import pecan.rest
 
 from sentinel import utils
+from sentinel.api.controllers.base import BaseController
 from sentinel.clients import Clients
-from sentinel.whitelist import Whitelist
 
 
-class IdentityV3GroupsUsersController(pecan.rest.RestController):
+class IdentityV3GroupsUsersController(BaseController):
     """Controller for interacting with group users"""
 
+    collection = u'users'
+    resource = u'user'
+
     @pecan.expose('json')
-    def get(self, group_id):
+    @pecan.decorators.accept_noncanonical
+    def get_all(self, group_id):
         keystone = Clients.keystone()
         group = keystone.groups.get(group_id)
         utils.check_permissions(group)
         users = keystone.users.list(group=group)
-        return utils.render_with_links(
-            u'users',
-            Whitelist.apply(users, 'sentinel.api.controllers.identity.v3.users'))
+        return self.format_collection(users)
 
     @pecan.expose('json')
     def put(self, group_id, user_id):
@@ -64,7 +65,7 @@ class IdentityV3GroupsUsersController(pecan.rest.RestController):
         pecan.response.status = 204
 
 
-class IdentityV3GroupsController(pecan.rest.RestController):
+class IdentityV3GroupsController(BaseController):
     """Controller for the groups collection"""
 
     collection = u'groups'
@@ -79,7 +80,7 @@ class IdentityV3GroupsController(pecan.rest.RestController):
         keystone = Clients.keystone()
         groups = keystone.groups.list(
             domain=pecan.request.context['domain'])
-        return utils.render_with_links(self.collection, Whitelist.apply(groups))
+        return self.format_collection(groups)
 
     @pecan.expose('json')
     @pecan.decorators.accept_noncanonical
@@ -90,14 +91,14 @@ class IdentityV3GroupsController(pecan.rest.RestController):
             pecan.request.context['domain'],
             description=pecan.request.json['group'].get('description'))
         pecan.response.status = 201
-        return utils.render(self.resource, Whitelist.apply(group))
+        return self.format_resource(group)
 
     @pecan.expose('json')
     def get(self, group_id):
         keystone = Clients.keystone()
         group = keystone.groups.get(group_id)
         utils.check_permissions(group)
-        return utils.render(self.resource, Whitelist.apply(group))
+        return self.format_resource(group)
 
     @pecan.expose('json')
     def patch(self, group_id):
@@ -108,7 +109,7 @@ class IdentityV3GroupsController(pecan.rest.RestController):
             group,
             name=pecan.request.json['group'].get('name'),
             description=pecan.request.json['group'].get('description'))
-        return utils.render(self.resource, Whitelist.apply(group))
+        return self.format_resource(group)
 
     @pecan.expose('json')
     def delete(self, group_id):
