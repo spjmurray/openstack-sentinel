@@ -19,7 +19,6 @@ import pecan.decorators
 
 from sentinel import utils
 from sentinel.api.controllers.base import BaseController
-from sentinel.clients import Clients
 
 
 class IdentityV3UsersController(BaseController):
@@ -37,16 +36,14 @@ class IdentityV3UsersController(BaseController):
     @pecan.expose('json')
     @pecan.decorators.accept_noncanonical
     def get_all(self):
-        keystone = Clients.keystone()
-        users = keystone.users.list(
+        users = self.identity.users.list(
             domain=pecan.request.context['domain'])
         return self.format_collection(users)
 
     @pecan.expose('json')
     @pecan.decorators.accept_noncanonical
     def post(self):
-        keystone = Clients.keystone()
-        user = keystone.users.create(
+        user = self.identity.users.create(
             pecan.request.json['user']['name'],
             domain=pecan.request.context['domain'],
             email=pecan.request.json['user'].get('email'),
@@ -57,17 +54,15 @@ class IdentityV3UsersController(BaseController):
 
     @pecan.expose('json')
     def get(self, user_id):
-        keystone = Clients.keystone()
-        user = keystone.users.get(user_id)
+        user = self.identity.users.get(user_id)
         utils.check_permissions(user)
         return self.format_resource(user)
 
     @pecan.expose('json')
     def patch(self, user_id):
-        keystone = Clients.keystone()
-        user = keystone.users.get(user_id)
+        user = self.identity.users.get(user_id)
         utils.check_permissions(user)
-        user = keystone.users.update(
+        user = self.identity.users.update(
             user,
             name=pecan.request.json['user'].get('name'),
             email=pecan.request.json['user'].get('email'),
@@ -77,26 +72,23 @@ class IdentityV3UsersController(BaseController):
 
     @pecan.expose('json')
     def delete(self, user_id):
-        keystone = Clients.keystone()
-        user = keystone.users.get(user_id)
+        user = self.identity.users.get(user_id)
         utils.check_permissions(user)
-        keystone.users.delete(user)
+        self.identity.users.delete(user)
         pecan.response.status = 204
 
     @pecan.expose('json')
     def groups(self, user_id):
-        keystone = Clients.keystone()
-        user = keystone.users.get(user_id)
+        user = self.identity.users.get(user_id)
         utils.check_permissions(user)
-        groups = keystone.groups.list(user=user, domain=pecan.request.context['domain'])
+        groups = self.identity.groups.list(user=user, domain=pecan.request.context['domain'])
         return self.format_collection(groups, resource=u'group', collection=u'groups')
 
     @pecan.expose('json')
     def projects(self, user_id):
-        keystone = Clients.keystone()
-        user = keystone.users.get(user_id)
+        user = self.identity.users.get(user_id)
         utils.check_permissions(user)
-        projects = keystone.projects.list(user=user, domain=pecan.request.context['domain'])
+        projects = self.identity.projects.list(user=user, domain=pecan.request.context['domain'])
         return self.format_collection(projects, resource=u'project', collection=u'projects')
 
 # vi: ts=4 et:

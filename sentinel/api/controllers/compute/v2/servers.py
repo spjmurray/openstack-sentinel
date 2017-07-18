@@ -19,39 +19,7 @@ import pecan
 import pecan.decorators
 
 from sentinel.api.controllers.base import BaseController
-from sentinel.clients import Clients
 from sentinel.scope import Scope
-
-
-def _all_projects():
-    """Do we want all projects in out domain"""
-
-    # A basic copy of nova API
-    all_projects = pecan.request.GET.get('all_tenants')
-    if all_projects:
-        return oslo_utils.strutils.bool_from_string(all_projects, True)
-
-    # An empty string is considered consent
-    return 'all_tenants' in pecan.request.GET
-
-
-def _scoped_servers():
-    """Return a detailed list of servers based on scoping requirements"""
-
-    # If the client requested all projects return those within the
-    # domain scope, same applies for a domain scoped token, otherwise
-    # scope to the specifc project
-    if _all_projects() or not pecan.request.context['token'].project_id:
-        projects = Scope.projects()
-    else:
-        projects = [pecan.request.context['token'].project_id]
-
-    # Must do a detailed search here as it returns the tenant_id field
-    nova = Clients.nova()
-    servers = nova.servers.list(search_opts={'all_tenants': 'True'})
-
-    # Filter out only servers within the IdP domain scope
-    return [x for x in servers if x.tenant_id in projects]
 
 
 class ComputeV2ServersController(BaseController):
@@ -66,26 +34,53 @@ class ComputeV2ServersController(BaseController):
             'metadata': ['GET'],
         }
 
+    def _all_projects(self):
+        """Do we want all projects in out domain"""
+
+        # A basic copy of nova API
+        all_projects = pecan.request.GET.get('all_tenants')
+        if all_projects:
+            return oslo_utils.strutils.bool_from_string(all_projects, True)
+
+        # An empty string is considered consent
+        return 'all_tenants' in pecan.request.GET
+
+    def _scoped_servers(self):
+        """Return a detailed list of servers based on scoping requirements"""
+
+        # If the client requested all projects return those within the
+        # domain scope, same applies for a domain scoped token, otherwise
+        # scope to the specifc project
+        if self._all_projects() or not pecan.request.context['token'].project_id:
+            projects = Scope.projects()
+        else:
+            projects = [pecan.request.context['token'].project_id]
+
+        # Must do a detailed search here as it returns the tenant_id field
+        servers = self.compute.servers.list(search_opts={'all_tenants': 'True'})
+
+        # Filter out only servers within the IdP domain scope
+        return [x for x in servers if x.tenant_id in projects]
+
     @pecan.expose('json')
     @pecan.decorators.accept_noncanonical
     def get_all(self):
         """Return a list of servers scoped to the domain/project"""
 
-        servers = _scoped_servers()
+        servers = self._scoped_servers()
         servers = [{u'id': x.id, u'name': x.name} for x in servers]
         return self.format_collection(servers)
 
     @pecan.expose('json')
     def detail(self):
-        servers = _scoped_servers()
+        servers = self._scoped_servers()
         return self.format_collection(servers)
 
     @pecan.expose('json')
     def metadata(self, server_id):
         """Return metadata associated with an instance"""
 
-        nova = Clients.nova()
-        server = nova.servers.get(server_id)
+        server = self.compute.servers.get(server_id)
 
         if server.tenant_id not in Scope.projects():
             pecan.abort(403, 'unauthorized access a resource outside of your domain')

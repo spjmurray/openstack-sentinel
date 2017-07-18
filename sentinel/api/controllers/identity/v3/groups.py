@@ -19,7 +19,6 @@ import pecan.decorators
 
 from sentinel import utils
 from sentinel.api.controllers.base import BaseController
-from sentinel.clients import Clients
 
 
 class IdentityV3GroupsUsersController(BaseController):
@@ -31,37 +30,33 @@ class IdentityV3GroupsUsersController(BaseController):
     @pecan.expose('json')
     @pecan.decorators.accept_noncanonical
     def get_all(self, group_id):
-        keystone = Clients.keystone()
-        group = keystone.groups.get(group_id)
+        group = self.identity.groups.get(group_id)
         utils.check_permissions(group)
-        users = keystone.users.list(group=group)
+        users = self.identity.users.list(group=group)
         return self.format_collection(users)
 
     @pecan.expose('json')
     def put(self, group_id, user_id):
-        keystone = Clients.keystone()
-        user = keystone.users.get(user_id)
-        group = keystone.groups.get(group_id)
+        user = self.identity.users.get(user_id)
+        group = self.identity.groups.get(group_id)
         utils.check_permissions(user, group)
-        keystone.users.add_to_group(user, group)
+        self.identity.users.add_to_group(user, group)
         pecan.response.status = 204
 
     @pecan.expose('json')
     def head(self, group_id, user_id):
-        keystone = Clients.keystone()
-        user = keystone.users.get(user_id)
-        group = keystone.groups.get(group_id)
+        user = self.identity.users.get(user_id)
+        group = self.identity.groups.get(group_id)
         utils.check_permissions(user, group)
-        keystone.users.check_in_group(user, group)
+        self.identity.users.check_in_group(user, group)
         pecan.response.status = 204
 
     @pecan.expose('json')
     def delete(self, group_id, user_id):
-        keystone = Clients.keystone()
-        user = keystone.users.get(user_id)
-        group = keystone.groups.get(group_id)
+        user = self.identity.users.get(user_id)
+        group = self.identity.groups.get(group_id)
         utils.check_permissions(user, group)
-        keystone.users.remove_from_group(user, group)
+        self.identity.users.remove_from_group(user, group)
         pecan.response.status = 204
 
 
@@ -77,16 +72,14 @@ class IdentityV3GroupsController(BaseController):
     @pecan.expose('json')
     @pecan.decorators.accept_noncanonical
     def get_all(self):
-        keystone = Clients.keystone()
-        groups = keystone.groups.list(
+        groups = self.identity.groups.list(
             domain=pecan.request.context['domain'])
         return self.format_collection(groups)
 
     @pecan.expose('json')
     @pecan.decorators.accept_noncanonical
     def post(self):
-        keystone = Clients.keystone()
-        group = keystone.groups.create(
+        group = self.identity.groups.create(
             pecan.request.json['group'].get('name'),
             pecan.request.context['domain'],
             description=pecan.request.json['group'].get('description'))
@@ -95,17 +88,15 @@ class IdentityV3GroupsController(BaseController):
 
     @pecan.expose('json')
     def get(self, group_id):
-        keystone = Clients.keystone()
-        group = keystone.groups.get(group_id)
+        group = self.identity.groups.get(group_id)
         utils.check_permissions(group)
         return self.format_resource(group)
 
     @pecan.expose('json')
     def patch(self, group_id):
-        keystone = Clients.keystone()
-        group = keystone.groups.get(group_id)
+        group = self.identity.groups.get(group_id)
         utils.check_permissions(group)
-        group = keystone.groups.update(
+        group = self.identity.groups.update(
             group,
             name=pecan.request.json['group'].get('name'),
             description=pecan.request.json['group'].get('description'))
@@ -113,10 +104,9 @@ class IdentityV3GroupsController(BaseController):
 
     @pecan.expose('json')
     def delete(self, group_id):
-        keystone = Clients.keystone()
-        group = keystone.groups.get(group_id)
+        group = self.identity.groups.get(group_id)
         utils.check_permissions(group)
-        keystone.groups.delete(group)
+        self.identity.groups.delete(group)
         pecan.response.status = 204
 
 # vi: ts=4 et:

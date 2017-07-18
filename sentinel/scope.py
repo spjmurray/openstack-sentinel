@@ -28,11 +28,11 @@ class Scope(object):
 
         # Domain is mapped from the certificate DN
         domain = pecan.request.context['domain']
-        keystone = Clients.keystone()
+        identity = Clients.identity()
 
         # Get a domain filtered list of projects and return the IDs
         # Todo: needs extending to support nested domains
-        projects = keystone.projects.list(domain=domain)
+        projects = identity.projects.list(domain=domain)
         return [x.id for x in projects]
 
 # vi: ts=4 et:

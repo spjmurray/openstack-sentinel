@@ -19,7 +19,6 @@ import pecan.decorators
 
 from sentinel import utils
 from sentinel.api.controllers.base import BaseController
-from sentinel.clients import Clients
 
 
 class IdentityV3ProjectsUsersRolesController(BaseController):
@@ -31,37 +30,33 @@ class IdentityV3ProjectsUsersRolesController(BaseController):
     @pecan.expose('json')
     @pecan.decorators.accept_noncanonical
     def get_all(self, project_id, user_id):
-        keystone = Clients.keystone()
-        project = keystone.projects.get(project_id)
-        user = keystone.users.get(user_id)
-        roles = keystone.roles.list(user=user, project=project)
+        project = self.identity.projects.get(project_id)
+        user = self.identity.users.get(user_id)
+        roles = self.identity.roles.list(user=user, project=project)
         return self.format_collection(roles)
 
     @pecan.expose('json')
     def put(self, project_id, user_id, role_id):
-        keystone = Clients.keystone()
-        project = keystone.projects.get(project_id)
-        user = keystone.users.get(user_id)
-        role = keystone.roles.get(role_id)
-        keystone.roles.grant(role, user=user, project=project)
+        project = self.identity.projects.get(project_id)
+        user = self.identity.users.get(user_id)
+        role = self.identity.roles.get(role_id)
+        self.identity.roles.grant(role, user=user, project=project)
         pecan.response.status = 204
 
     @pecan.expose('json')
     def head(self, project_id, user_id, role_id):
-        keystone = Clients.keystone()
-        project = keystone.projects.get(project_id)
-        user = keystone.users.get(user_id)
-        role = keystone.roles.get(role_id)
-        keystone.roles.check(role, user=user, project=project)
+        project = self.identity.projects.get(project_id)
+        user = self.identity.users.get(user_id)
+        role = self.identity.roles.get(role_id)
+        self.identity.roles.check(role, user=user, project=project)
         pecan.response.status = 204
 
     @pecan.expose('json')
     def delete(self, project_id, user_id, role_id):
-        keystone = Clients.keystone()
-        project = keystone.projects.get(project_id)
-        user = keystone.users.get(user_id)
-        role = keystone.roles.get(role_id)
-        keystone.roles.revoke(role, user=user, project=project)
+        project = self.identity.projects.get(project_id)
+        user = self.identity.users.get(user_id)
+        role = self.identity.roles.get(role_id)
+        self.identity.roles.revoke(role, user=user, project=project)
         pecan.response.status = 204
 
 
@@ -85,37 +80,33 @@ class IdentityV3ProjectsGroupsRolesController(BaseController):
     @pecan.expose('json')
     @pecan.decorators.accept_noncanonical
     def get_all(self, project_id, group_id):
-        keystone = Clients.keystone()
-        project = keystone.projects.get(project_id)
-        group = keystone.groups.get(group_id)
-        roles = keystone.roles.list(group=group, project=project)
+        project = self.identity.projects.get(project_id)
+        group = self.identity.groups.get(group_id)
+        roles = self.identity.roles.list(group=group, project=project)
         return self.format_collection(roles)
 
     @pecan.expose('json')
     def put(self, project_id, group_id, role_id):
-        keystone = Clients.keystone()
-        project = keystone.projects.get(project_id)
-        group = keystone.groups.get(group_id)
-        role = keystone.roles.get(role_id)
-        keystone.roles.grant(role, group=group, project=project)
+        project = self.identity.projects.get(project_id)
+        group = self.identity.groups.get(group_id)
+        role = self.identity.roles.get(role_id)
+        self.identity.roles.grant(role, group=group, project=project)
         pecan.response.status = 204
 
     @pecan.expose('json')
     def head(self, project_id, group_id, role_id):
-        keystone = Clients.keystone()
-        project = keystone.projects.get(project_id)
-        group = keystone.groups.get(group_id)
-        role = keystone.roles.get(role_id)
-        keystone.roles.check(role, group=group, project=project)
+        project = self.identity.projects.get(project_id)
+        group = self.identity.groups.get(group_id)
+        role = self.identity.roles.get(role_id)
+        self.identity.roles.check(role, group=group, project=project)
         pecan.response.status = 204
 
     @pecan.expose('json')
     def delete(self, project_id, group_id, role_id):
-        keystone = Clients.keystone()
-        project = keystone.projects.get(project_id)
-        group = keystone.groups.get(group_id)
-        role = keystone.roles.get(role_id)
-        keystone.roles.revoke(role, group=group, project=project)
+        project = self.identity.projects.get(project_id)
+        group = self.identity.groups.get(group_id)
+        role = self.identity.roles.get(role_id)
+        self.identity.roles.revoke(role, group=group, project=project)
         pecan.response.status = 204
 
 
@@ -143,16 +134,14 @@ class IdentityV3ProjectsController(BaseController):
     @pecan.expose('json')
     @pecan.decorators.accept_noncanonical
     def get_all(self):
-        keystone = Clients.keystone()
-        projects = keystone.projects.list(
+        projects = self.identity.projects.list(
             domain=pecan.request.context['domain'])
         return self.format_collection(projects)
 
     @pecan.expose('json')
     @pecan.decorators.accept_noncanonical
     def post(self):
-        keystone = Clients.keystone()
-        project = keystone.projects.create(
+        project = self.identity.projects.create(
             pecan.request.json['project'].get('name'),
             pecan.request.context['domain'],
             description=pecan.request.json['project'].get('description'),
@@ -163,20 +152,18 @@ class IdentityV3ProjectsController(BaseController):
 
     @pecan.expose('json')
     def get(self, project_id):
-        keystone = Clients.keystone()
         query = pecan.request.GET
         params = ['subtree_as_list', 'subtree_as_ids', 'parents_as_list', 'parents_as_ids']
         kwargs = {x: True for x in params if x in query}
-        project = keystone.projects.get(project_id, **kwargs)
+        project = self.identity.projects.get(project_id, **kwargs)
         utils.check_permissions(project)
         return self.format_resource(project)
 
     @pecan.expose('json')
     def patch(self, project_id):
-        keystone = Clients.keystone()
-        project = keystone.projects.get(project_id)
+        project = self.identity.projects.get(project_id)
         utils.check_permissions(project)
-        project = keystone.projects.update(
+        project = self.identity.projects.update(
             project,
             name=pecan.request.json['project'].get('name'),
             description=pecan.request.json['project'].get('description'),
@@ -185,10 +172,9 @@ class IdentityV3ProjectsController(BaseController):
 
     @pecan.expose('json')
     def delete(self, project_id):
-        keystone = Clients.keystone()
-        project = keystone.projects.get(project_id)
+        project = self.identity.projects.get(project_id)
         utils.check_permissions(project)
-        keystone.projects.delete(project)
+        self.identity.projects.delete(project)
         pecan.response.status = 204
 
 # vi: ts=4 et:

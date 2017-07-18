@@ -39,12 +39,12 @@ class Clients(object):
         return session.Session(auth=auth)
 
     @classmethod
-    def keystone(cls):
+    def identity(cls):
         """Creates a Keystone client"""
         return kc.Client(session=cls._session())
 
     @classmethod
-    def nova(cls):
+    def compute(cls):
         """Creates a Nova client"""
         return nc.Client(2, session=cls._session())
 

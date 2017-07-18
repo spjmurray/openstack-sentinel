@@ -19,7 +19,6 @@ import pecan.decorators
 
 from sentinel import utils
 from sentinel.api.controllers.base import BaseController
-from sentinel.clients import Clients
 
 
 class IdentityV3RolesController(BaseController):
@@ -31,15 +30,13 @@ class IdentityV3RolesController(BaseController):
     @pecan.expose('json')
     @pecan.decorators.accept_noncanonical
     def get_all(self):
-        keystone = Clients.keystone()
-        roles = keystone.roles.list(
+        roles = self.identity.roles.list(
             domain_id=pecan.request.context['domain'])
         return self.format_collection(roles)
 
     @pecan.expose('json')
     def get(self, role_id):
-        keystone = Clients.keystone()
-        role = keystone.roles.get(role_id)
+        role = self.identity.roles.get(role_id)
         utils.check_permissions(role)
         return self.format_resource(role)
 
