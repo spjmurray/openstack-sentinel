@@ -14,6 +14,7 @@
 
 """Custom matchers for use with testtools assertions"""
 
+
 class IsInCollectionMismatch(object):
     def __init__(self, resource, collection):
         self.resource = resource
@@ -22,6 +23,7 @@ class IsInCollectionMismatch(object):
         return '{} is not in {}'.format(self.resource, self.collection)
     def get_details(self):
         return {}
+
 
 class IsInCollection(object):
     def __init__(self, collection):
@@ -34,6 +36,7 @@ class IsInCollection(object):
             return IsInCollectionMismatch(actual.id, ids)
         return None
 
+
 class IsNotInCollectionMismatch(object):
     def __init__(self, resource, collection):
         self.resource = resource
@@ -42,6 +45,7 @@ class IsNotInCollectionMismatch(object):
         return '{} is in {}'.format(self.resource, self.collection)
     def get_details(self):
         return {}
+
 
 class IsNotInCollection(object):
     def __init__(self, collection):

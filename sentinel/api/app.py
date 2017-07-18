@@ -39,7 +39,7 @@ def get_app():
     conf.read('/etc/sentinel/sentinel.conf')
 
     formater = logging.Formatter(
-        fmt = '%(asctime)s.%(msecs)03d %(process)d %(levelname)s %(name)s [%(user)s] %(message)s',
+        fmt='%(asctime)s.%(msecs)03d %(process)d %(levelname)s %(name)s [%(user)s] %(message)s',
         datefmt='%Y-%m-%d %H:%M:%S')
 
     handler = logging.FileHandler('/var/log/sentinel/sentinel.log')

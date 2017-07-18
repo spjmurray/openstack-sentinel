@@ -14,7 +14,6 @@
 
 """Whitelist fields from OpenStack resources"""
 
-import inspect
 import pecan
 
 class Whitelist(object):

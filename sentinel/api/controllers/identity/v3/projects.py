@@ -70,6 +70,7 @@ class IdentityV3ProjectsUsersController(BaseController):
     def __init__(self):
         self.roles = IdentityV3ProjectsUsersRolesController()
 
+    # pylint: disable=unused-argument
     def get(self, project_id, user_id):
         # Required for routing
         pecan.response.status = 404
@@ -123,6 +124,7 @@ class IdentityV3ProjectsGroupsController(BaseController):
     def __init__(self):
         self.roles = IdentityV3ProjectsGroupsRolesController()
 
+    # pylint: disable=unused-argument
     def get(self, project_id, group_id):
         # Required for routing
         pecan.response.status = 404

@@ -41,8 +41,8 @@ class KeystoneUsersTestCase(base.KeystoneBaseTestCase):
         self.assertEqual(child.entity.parent_id, parent.entity.id)
 
     def test_update(self):
-        project = self.useFixture(fixtures.Project(self.sentinel))
-        project = self.sentinel.projects.update(project.entity,
+        project_fix = self.useFixture(fixtures.Project(self.sentinel))
+        project = self.sentinel.projects.update(project_fix.entity,
                                                 description=TEST_PROJECT_DESCRIPTION,
                                                 enabled=False)
         self.assertEqual(project.description, TEST_PROJECT_DESCRIPTION)

@@ -34,8 +34,8 @@ class KeystoneGroupsTestCase(base.KeystoneBaseTestCase):
         self.assertRaises(http.Conflict, self.sentinel.groups.create, TEST_GROUP)
 
     def test_update(self):
-        group = self.useFixture(fixtures.Group(self.sentinel))
-        group = self.sentinel.groups.update(group.entity,
+        group_fix = self.useFixture(fixtures.Group(self.sentinel))
+        group = self.sentinel.groups.update(group_fix.entity,
                                             name=TEST_GROUP,
                                             description=TEST_GROUP_DESCRIPTION)
         self.assertEqual(group.name, TEST_GROUP)
@@ -67,12 +67,20 @@ class KeystoneGroupsTestCase(base.KeystoneBaseTestCase):
         group = self.useFixture(fixtures.Group(self.sentinel))
         self.sentinel.users.add_to_group(user.entity, group.entity)
         self.sentinel.users.remove_from_group(user.entity, group.entity)
-        self.assertRaises(http.NotFound, self.sentinel.users.remove_from_group, user.entity, group.entity)
+        self.assertRaises(
+            http.NotFound,
+            self.sentinel.users.remove_from_group,
+            user.entity,
+            group.entity)
 
     def test_group_has_user(self):
         user = self.useFixture(fixtures.User(self.sentinel))
         group = self.useFixture(fixtures.Group(self.sentinel))
-        self.assertRaises(http.NotFound, self.sentinel.users.check_in_group, user.entity, group.entity)
+        self.assertRaises(
+            http.NotFound,
+            self.sentinel.users.check_in_group,
+            user.entity,
+            group.entity)
         self.sentinel.users.add_to_group(user.entity, group.entity)
         self.assertEqual(self.sentinel.users.check_in_group(user.entity, group.entity), True)
 

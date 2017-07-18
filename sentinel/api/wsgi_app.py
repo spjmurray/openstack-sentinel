@@ -14,6 +14,8 @@
 
 """Main WSGI entry point"""
 
+# pylint: disable=invalid-name
+
 from sentinel.api.app import get_app
 
 application = get_app()

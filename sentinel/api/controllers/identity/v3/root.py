@@ -23,6 +23,7 @@ from sentinel.api.controllers.identity.v3 import projects
 from sentinel.api.controllers.identity.v3 import roles
 from sentinel.api.controllers.identity.v3 import users
 
+
 class IdentityV3Controller(object):
     def __init__(self):
         self.auth = auth.IdentityV3AuthController()

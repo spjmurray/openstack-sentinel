@@ -38,8 +38,8 @@ class KeystoneUsersTestCase(base.KeystoneBaseTestCase):
         self.assertRaises(http.Conflict, self.sentinel.users.create, TEST_USER)
 
     def test_update(self):
-        user = self.useFixture(fixtures.User(self.sentinel))
-        user = self.sentinel.users.update(user.entity,
+        user_fix = self.useFixture(fixtures.User(self.sentinel))
+        user = self.sentinel.users.update(user_fix.entity,
                                           name=TEST_USER,
                                           email=TEST_USER_EMAIL,
                                           description=TEST_USER_DESCRIPTION,

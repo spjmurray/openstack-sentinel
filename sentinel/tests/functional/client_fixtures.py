@@ -12,8 +12,9 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import fixtures
 import uuid
+
+import fixtures
 
 
 PREFIX = 'sentinel-test-'
@@ -77,7 +78,10 @@ class UserProjectGrant(IdentityBase):
         self.user = self.useFixture(User(self.client))
         self.project = self.useFixture(Project(self.client))
         self.role = self.useFixture(Role(self.client))
-        self.client.roles.grant(self.role.entity, user=self.user.entity, project=self.project.entity)
+        self.client.roles.grant(
+            self.role.entity,
+            user=self.user.entity,
+            project=self.project.entity)
 
 
 class GroupProjectGrant(IdentityBase):
@@ -85,7 +89,10 @@ class GroupProjectGrant(IdentityBase):
         self.group = self.useFixture(Group(self.client))
         self.project = self.useFixture(Project(self.client))
         self.role = self.useFixture(Role(self.client))
-        self.client.roles.grant(self.role.entity, group=self.group.entity, project=self.project.entity)
+        self.client.roles.grant(
+            self.role.entity,
+            group=self.group.entity,
+            project=self.project.entity)
 
 
 # vi: ts=4 et:

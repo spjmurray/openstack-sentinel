@@ -21,6 +21,7 @@ from sentinel.token import Token
 
 LOG = logging.getLogger(__name__)
 
+
 class IdentityV3AuthController(object):
 
     @pecan.expose('json')

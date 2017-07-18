@@ -11,7 +11,8 @@ ignore=openstack
 # W0142: *args and **kwargs are fine.
 # W0622: Redefining id is fine.
 # W0703: Catch "Exception".
-disable=C0111,W0511,W0142,W0622,W0703
+# R0201: Method could be a function
+disable=C0111,W0511,W0142,W0622,W0703,R0201
 
 [Basic]
 # Variable names can be 1 to 31 characters long, with lowercase and underscores
@@ -46,3 +47,6 @@ additional-builtins=_
 
 [TYPECHECK]
 generated-members=query,node_template,status_code,data
+
+[SIMILARITIES]
+ignore-imports=yes

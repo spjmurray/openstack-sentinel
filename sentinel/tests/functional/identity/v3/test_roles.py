@@ -12,8 +12,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from keystoneauth1.exceptions import http
-
 from sentinel.tests.functional import matchers
 from sentinel.tests.functional import client_fixtures as fixtures
 from sentinel.tests.functional.identity import base
@@ -33,11 +31,17 @@ class KeystoneRolesTestCase(base.KeystoneBaseTestCase):
 
     def test_user_role_check(self):
         grant = self.useFixture(fixtures.UserProjectGrant(self.sentinel))
-        self.sentinel.roles.check(grant.role.entity, user=grant.user.entity, project=grant.project.entity)
+        self.sentinel.roles.check(
+            grant.role.entity,
+            user=grant.user.entity,
+            project=grant.project.entity)
 
     def test_user_role_revoke(self):
         grant = self.useFixture(fixtures.UserProjectGrant(self.sentinel))
-        self.sentinel.roles.revoke(grant.role.entity, user=grant.user.entity, project=grant.project.entity)
+        self.sentinel.roles.revoke(
+            grant.role.entity,
+            user=grant.user.entity,
+            project=grant.project.entity)
 
     def test_user_role_list(self):
         grant = self.useFixture(fixtures.UserProjectGrant(self.sentinel))
@@ -52,11 +56,17 @@ class KeystoneRolesTestCase(base.KeystoneBaseTestCase):
 
     def test_group_role_check(self):
         grant = self.useFixture(fixtures.GroupProjectGrant(self.sentinel))
-        self.sentinel.roles.check(grant.role.entity, group=grant.group.entity, project=grant.project.entity)
+        self.sentinel.roles.check(
+            grant.role.entity,
+            group=grant.group.entity,
+            project=grant.project.entity)
 
     def test_group_role_revoke(self):
         grant = self.useFixture(fixtures.GroupProjectGrant(self.sentinel))
-        self.sentinel.roles.revoke(grant.role.entity, group=grant.group.entity, project=grant.project.entity)
+        self.sentinel.roles.revoke(
+            grant.role.entity,
+            group=grant.group.entity,
+            project=grant.project.entity)
 
     def test_group_role_list(self):
         grant = self.useFixture(fixtures.GroupProjectGrant(self.sentinel))
