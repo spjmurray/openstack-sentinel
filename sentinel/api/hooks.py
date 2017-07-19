@@ -84,13 +84,21 @@ class ExceptionHook(pecan.hooks.PecanHook):
     """Catch exceptions"""
 
     def on_error(self, state, exc):
-        if isinstance(exc, webob.exc.HTTPNotFound):
-            return
+        LOG.warning('Exception %s: %s', exc.__class__.__name__, exc.message)
+        LOG.warning('%s', traceback.format_exc(exc))
 
-        LOG.error('Exception %s: %s', exc.__class__.__name__, exc.message)
-        LOG.error('%s', traceback.format_exc(exc))
+        # If it's a native webob exception then pecan has already done its own
+        # thing and filled in the body for us.  We want to reset this so that
+        # the exception's __call__ method generated a webob native body which
+        # is cpm[atible with OpenStack clients
+        if issubclass(exc.__class__, webob.Response):
+            del exc.body
+            return exc
 
+        # Translate openstack client exceptions back into webob
         if issubclass(exc.__class__, keystoneauth1.exceptions.HttpError):
             return webob.Response(exc.message, status=exc.http_status)
+
+        LOG.error('Unhandled exception')
 
 # vi: ts=4 et:
