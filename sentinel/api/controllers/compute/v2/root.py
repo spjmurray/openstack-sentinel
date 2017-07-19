@@ -14,10 +14,18 @@
 
 """Root controller for /compute/v2"""
 
+import pecan
+
+from sentinel.api.controllers.compute.v2 import quota_sets
 from sentinel.api.controllers.compute.v2 import servers
+
 
 class ComputeV2Controller(object):
     def __init__(self):
         self.servers = servers.ComputeV2ServersController()
+
+
+pecan.route(ComputeV2Controller, 'os-quota-sets', quota_sets.ComputeV2QuotaSetsController())
+
 
 # vi: ts=4 et:

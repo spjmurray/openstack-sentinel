@@ -20,17 +20,28 @@ class Whitelist(object):
 
     @staticmethod
     def apply(resources, name):
-        whitelist = pecan.request.context['conf'].get('whitelist', name)
+        whitelist = pecan.request.context['conf'].get('whitelist', name).split(',')
 
+        # Just pass everything through
+        def null_whitelister(resource):
+            return resource.to_dict()
+
+        # Selectively return only whitelisted key/value pairs
         def whitelister(resource):
             resource = resource.to_dict()
             return {k: resource[k] for k in resource if k in whitelist}
 
+        # Select the processing engine
+        if '*' in whitelist:
+            proc = null_whitelister
+        else:
+            proc = whitelister
+
         # Handle collections
         if isinstance(resources, list):
-            return [whitelister(x) for x in resources]
+            return [proc(x) for x in resources]
 
         # Or single resources
-        return whitelister(resources)
+        return proc(resources)
 
 # vi: ts=4 et:
