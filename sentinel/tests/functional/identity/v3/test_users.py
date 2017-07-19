@@ -14,9 +14,8 @@
 
 from keystoneauth1.exceptions import http
 
-from sentinel.tests.functional import matchers
+from sentinel.tests.functional import base, matchers
 from sentinel.tests.functional import client_fixtures as fixtures
-from sentinel.tests.functional.identity import base
 
 TEST_USER = 'test'
 TEST_USER_EMAIL = 'test@example.com'
@@ -24,26 +23,28 @@ TEST_USER_DESCRIPTION = 'Sentinel Test User'
 
 SP_USER = 'sp_user'
 
-class KeystoneUsersTestCase(base.KeystoneBaseTestCase):
+class KeystoneUsersTestCase(base.BaseTestCase):
 
     def test_create(self):
-        user = self.sentinel.users.create(TEST_USER,
-                                          email=TEST_USER_EMAIL,
-                                          description=TEST_USER_DESCRIPTION)
-        self.addCleanup(self.sentinel.users.delete, user)
+        user = self.sentinel.identity.users.create(
+            TEST_USER,
+            email=TEST_USER_EMAIL,
+            description=TEST_USER_DESCRIPTION)
+        self.addCleanup(self.sentinel.identity.users.delete, user)
         self.assertEqual(user.name, TEST_USER)
         self.assertEqual(user.email, TEST_USER_EMAIL)
         self.assertEqual(user.description, TEST_USER_DESCRIPTION)
         self.assertEqual(user.enabled, True)
-        self.assertRaises(http.Conflict, self.sentinel.users.create, TEST_USER)
+        self.assertRaises(http.Conflict, self.sentinel.identity.users.create, TEST_USER)
 
     def test_update(self):
         user_fix = self.useFixture(fixtures.User(self.sentinel))
-        user = self.sentinel.users.update(user_fix.entity,
-                                          name=TEST_USER,
-                                          email=TEST_USER_EMAIL,
-                                          description=TEST_USER_DESCRIPTION,
-                                          enabled=False)
+        user = self.sentinel.identity.users.update(
+            user_fix.entity,
+            name=TEST_USER,
+            email=TEST_USER_EMAIL,
+            description=TEST_USER_DESCRIPTION,
+            enabled=False)
         self.assertEqual(user.name, TEST_USER)
         self.assertEqual(user.email, TEST_USER_EMAIL)
         self.assertEqual(user.description, TEST_USER_DESCRIPTION)
@@ -51,28 +52,28 @@ class KeystoneUsersTestCase(base.KeystoneBaseTestCase):
 
     def test_get(self):
         user = self.useFixture(fixtures.User(self.sentinel))
-        self.sentinel.users.get(user.entity)
+        self.sentinel.identity.users.get(user.entity)
 
     def test_delete(self):
-        user = self.sentinel.users.create(TEST_USER)
-        self.sentinel.users.delete(user)
-        self.assertRaises(http.NotFound, self.sentinel.users.delete, user)
+        user = self.sentinel.identity.users.create(TEST_USER)
+        self.sentinel.identity.users.delete(user)
+        self.assertRaises(http.NotFound, self.sentinel.identity.users.delete, user)
 
     def test_list(self):
-        sp_user = self.useFixture(fixtures.User(self.keystone))
+        sp_user = self.useFixture(fixtures.User(self.openstack))
         user = self.useFixture(fixtures.User(self.sentinel))
-        users = self.sentinel.users.list()
+        users = self.sentinel.identity.users.list()
         self.assertThat(user.entity, matchers.IsInCollection(users))
         self.assertThat(sp_user.entity, matchers.IsNotInCollection(users))
 
     def test_group_list(self):
         group_user = self.useFixture(fixtures.GroupUser(self.sentinel))
-        groups = self.sentinel.groups.list(user=group_user.user.entity)
+        groups = self.sentinel.identity.groups.list(user=group_user.user.entity)
         self.assertThat(group_user.group.entity, matchers.IsInCollection(groups))
 
     def test_project_list(self):
         grant = self.useFixture(fixtures.UserProjectGrant(self.sentinel))
-        projects = self.sentinel.projects.list(user=grant.user.entity)
+        projects = self.sentinel.identity.projects.list(user=grant.user.entity)
         self.assertThat(grant.project.entity, matchers.IsInCollection(projects))
 
 # vi: ts=4 et:
