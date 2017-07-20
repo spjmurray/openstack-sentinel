@@ -13,12 +13,16 @@
 #    under the License.
 
 import functools
-import inspect
 
 import pecan
 
+from sentinel import utils
+
 
 def supported_queries(*supported):
+    '''
+    Checks for whitelisted query parameters
+    '''
     def decorate(func):
         @functools.wraps(func)
         def call(*args):
@@ -26,6 +30,30 @@ def supported_queries(*supported):
             if unsupported:
                 pecan.abort(400, 'Unsupported query parameters %s' % ','.join(unsupported))
             return func(*args)
+        return call
+    return decorate
+
+def mutate_arguments(*types):
+    '''
+    Converts resource IDs into concrete types and performs permissions checks
+    '''
+    def decorate(func):
+        @functools.wraps(func)
+        def call(self, *args):
+            if len(types) != len(args):
+                pecan.abort(500, 'Argument list lengths differ')
+            def resolve_getter(path):
+                '''Takes a path e.g. 'identity.users' and return the object from the class'''
+                path = path.split('.')
+                obj = self
+                while path:
+                    obj = getattr(obj, path.pop(0))
+                return obj
+            # Map from object IDs to resource objects
+            resources = [resolve_getter(x[0]).get(x[1]) for x in zip(types, args)]
+            # Check we have permission to access the resource
+            utils.check_permissions(*resources)
+            return func(self, *resources)
         return call
     return decorate
 

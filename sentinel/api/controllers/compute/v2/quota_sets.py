@@ -16,9 +16,8 @@
 
 import pecan
 
-import sentinel.utils as utils
 from sentinel.api.controllers.base import BaseController
-from sentinel.decorators import supported_queries
+from sentinel.decorators import supported_queries, mutate_arguments
 
 
 class ComputeV2QuotaSetsController(BaseController):
@@ -34,41 +33,36 @@ class ComputeV2QuotaSetsController(BaseController):
 
     @pecan.expose('json')
     @supported_queries()
-    def get(self, project_id):
-        project = self.identity.projects.get(project_id)
-        utils.check_permissions(project)
-        quota = self.compute.quotas.get(project_id)
+    @mutate_arguments('identity.projects')
+    def get(self, project):
+        quota = self.compute.quotas.get(project.id)
         return self.format_resource(quota)
 
     @pecan.expose('json')
     @supported_queries()
-    def put(self, project_id):
-        project = self.identity.projects.get(project_id)
-        utils.check_permissions(project)
-        quota = self.compute.quotas.update(project_id, **pecan.request.json.get('quota_set'))
+    @mutate_arguments('identity.projects')
+    def put(self, project):
+        quota = self.compute.quotas.update(project.id, **pecan.request.json.get('quota_set'))
         return self.format_resource(quota)
 
     @pecan.expose('json')
     @supported_queries()
-    def delete(self, project_id):
-        project = self.identity.projects.get(project_id)
-        utils.check_permissions(project)
-        self.compute.quotas.delete(project_id)
+    @mutate_arguments('identity.projects')
+    def delete(self, project):
+        self.compute.quotas.delete(project.id)
         pecan.response.status = 202
 
     @pecan.expose('json')
     @supported_queries()
-    def defaults(self, project_id):
-        project = self.identity.projects.get(project_id)
-        utils.check_permissions(project)
-        quota = self.compute.quotas.defaults(project_id)
+    @mutate_arguments('identity.projects')
+    def defaults(self, project):
+        quota = self.compute.quotas.defaults(project.id)
         return self.format_resource(quota)
 
     @pecan.expose('json')
     @supported_queries()
-    def detail(self, project_id):
-        project = self.identity.projects.get(project_id)
-        utils.check_permissions(project)
+    @mutate_arguments('identity.projects')
+    def detail(self, project):
         quota = self.compute.quotas.get(project.id, detail=True)
         return self.format_resource(quota)
 

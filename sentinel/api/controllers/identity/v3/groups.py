@@ -17,9 +17,8 @@
 import pecan
 import pecan.decorators
 
-from sentinel import utils
 from sentinel.api.controllers.base import BaseController
-from sentinel.decorators import supported_queries
+from sentinel.decorators import supported_queries, mutate_arguments
 
 
 class IdentityV3GroupsUsersController(BaseController):
@@ -31,33 +30,26 @@ class IdentityV3GroupsUsersController(BaseController):
     @pecan.expose('json')
     @pecan.decorators.accept_noncanonical
     @supported_queries()
-    def get_all(self, group_id):
-        group = self.identity.groups.get(group_id)
-        utils.check_permissions(group)
+    @mutate_arguments('identity.groups')
+    def get_all(self, group):
         users = self.identity.users.list(group=group)
         return self.format_collection(users)
 
     @pecan.expose('json')
-    def put(self, group_id, user_id):
-        user = self.identity.users.get(user_id)
-        group = self.identity.groups.get(group_id)
-        utils.check_permissions(user, group)
+    @mutate_arguments('identity.groups', 'identity.users')
+    def put(self, group, user):
         self.identity.users.add_to_group(user, group)
         pecan.response.status = 204
 
     @pecan.expose('json')
-    def head(self, group_id, user_id):
-        user = self.identity.users.get(user_id)
-        group = self.identity.groups.get(group_id)
-        utils.check_permissions(user, group)
+    @mutate_arguments('identity.groups', 'identity.users')
+    def head(self, group, user):
         self.identity.users.check_in_group(user, group)
         pecan.response.status = 204
 
     @pecan.expose('json')
-    def delete(self, group_id, user_id):
-        user = self.identity.users.get(user_id)
-        group = self.identity.groups.get(group_id)
-        utils.check_permissions(user, group)
+    @mutate_arguments('identity.groups', 'identity.users')
+    def delete(self, group, user):
         self.identity.users.remove_from_group(user, group)
         pecan.response.status = 204
 
@@ -90,15 +82,13 @@ class IdentityV3GroupsController(BaseController):
         return self.format_resource(group)
 
     @pecan.expose('json')
-    def get(self, group_id):
-        group = self.identity.groups.get(group_id)
-        utils.check_permissions(group)
+    @mutate_arguments('identity.groups')
+    def get(self, group):
         return self.format_resource(group)
 
     @pecan.expose('json')
-    def patch(self, group_id):
-        group = self.identity.groups.get(group_id)
-        utils.check_permissions(group)
+    @mutate_arguments('identity.groups')
+    def patch(self, group):
         group = self.identity.groups.update(
             group,
             name=pecan.request.json['group'].get('name'),
@@ -106,9 +96,8 @@ class IdentityV3GroupsController(BaseController):
         return self.format_resource(group)
 
     @pecan.expose('json')
-    def delete(self, group_id):
-        group = self.identity.groups.get(group_id)
-        utils.check_permissions(group)
+    @mutate_arguments('identity.groups')
+    def delete(self, group):
         self.identity.groups.delete(group)
         pecan.response.status = 204
 

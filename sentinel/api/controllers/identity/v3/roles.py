@@ -17,9 +17,8 @@
 import pecan
 import pecan.decorators
 
-from sentinel import utils
 from sentinel.api.controllers.base import BaseController
-from sentinel.decorators import supported_queries
+from sentinel.decorators import supported_queries, mutate_arguments
 
 
 class IdentityV3RolesController(BaseController):
@@ -37,9 +36,8 @@ class IdentityV3RolesController(BaseController):
         return self.format_collection(roles)
 
     @pecan.expose('json')
-    def get(self, role_id):
-        role = self.identity.roles.get(role_id)
-        utils.check_permissions(role)
+    @mutate_arguments('identity.roles')
+    def get(self, role):
         return self.format_resource(role)
 
 

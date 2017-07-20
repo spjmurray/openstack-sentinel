@@ -17,9 +17,8 @@
 import pecan
 import pecan.decorators
 
-from sentinel import utils
 from sentinel.api.controllers.base import BaseController
-from sentinel.decorators import supported_queries
+from sentinel.decorators import supported_queries, mutate_arguments
 
 
 class IdentityV3ProjectsUsersRolesController(BaseController):
@@ -30,37 +29,26 @@ class IdentityV3ProjectsUsersRolesController(BaseController):
 
     @pecan.expose('json')
     @pecan.decorators.accept_noncanonical
-    def get_all(self, project_id, user_id):
-        project = self.identity.projects.get(project_id)
-        user = self.identity.users.get(user_id)
-        utils.check_permissions(project, user)
+    @mutate_arguments('identity.projects', 'identity.users')
+    def get_all(self, project, user):
         roles = self.identity.roles.list(user=user, project=project)
         return self.format_collection(roles)
 
     @pecan.expose('json')
-    def put(self, project_id, user_id, role_id):
-        project = self.identity.projects.get(project_id)
-        user = self.identity.users.get(user_id)
-        role = self.identity.roles.get(role_id)
-        utils.check_permissions(project, user, role)
+    @mutate_arguments('identity.projects', 'identity.users', 'identity.roles')
+    def put(self, project, user, role):
         self.identity.roles.grant(role, user=user, project=project)
         pecan.response.status = 204
 
     @pecan.expose('json')
-    def head(self, project_id, user_id, role_id):
-        project = self.identity.projects.get(project_id)
-        user = self.identity.users.get(user_id)
-        role = self.identity.roles.get(role_id)
-        utils.check_permissions(project, user, role)
+    @mutate_arguments('identity.projects', 'identity.users', 'identity.roles')
+    def head(self, project, user, role):
         self.identity.roles.check(role, user=user, project=project)
         pecan.response.status = 204
 
     @pecan.expose('json')
-    def delete(self, project_id, user_id, role_id):
-        project = self.identity.projects.get(project_id)
-        user = self.identity.users.get(user_id)
-        role = self.identity.roles.get(role_id)
-        utils.check_permissions(project, user, role)
+    @mutate_arguments('identity.projects', 'identity.users', 'identity.roles')
+    def delete(self, project, user, role):
         self.identity.roles.revoke(role, user=user, project=project)
         pecan.response.status = 204
 
@@ -84,37 +72,26 @@ class IdentityV3ProjectsGroupsRolesController(BaseController):
 
     @pecan.expose('json')
     @pecan.decorators.accept_noncanonical
-    def get_all(self, project_id, group_id):
-        project = self.identity.projects.get(project_id)
-        group = self.identity.groups.get(group_id)
-        utils.check_permissions(project, group)
+    @mutate_arguments('identity.projects', 'identity.groups')
+    def get_all(self, project, group):
         roles = self.identity.roles.list(group=group, project=project)
         return self.format_collection(roles)
 
     @pecan.expose('json')
-    def put(self, project_id, group_id, role_id):
-        project = self.identity.projects.get(project_id)
-        group = self.identity.groups.get(group_id)
-        role = self.identity.roles.get(role_id)
-        utils.check_permissions(project, group, role)
+    @mutate_arguments('identity.projects', 'identity.groups', 'identity.roles')
+    def put(self, project, group, role):
         self.identity.roles.grant(role, group=group, project=project)
         pecan.response.status = 204
 
     @pecan.expose('json')
-    def head(self, project_id, group_id, role_id):
-        project = self.identity.projects.get(project_id)
-        group = self.identity.groups.get(group_id)
-        role = self.identity.roles.get(role_id)
-        utils.check_permissions(project, group, role)
+    @mutate_arguments('identity.projects', 'identity.groups', 'identity.roles')
+    def head(self, project, group, role):
         self.identity.roles.check(role, group=group, project=project)
         pecan.response.status = 204
 
     @pecan.expose('json')
-    def delete(self, project_id, group_id, role_id):
-        project = self.identity.projects.get(project_id)
-        group = self.identity.groups.get(group_id)
-        role = self.identity.roles.get(role_id)
-        utils.check_permissions(project, group, role)
+    @mutate_arguments('identity.projects', 'identity.groups', 'identity.roles')
+    def delete(self, project, group, role):
         self.identity.roles.revoke(role, group=group, project=project)
         pecan.response.status = 204
 
@@ -162,16 +139,15 @@ class IdentityV3ProjectsController(BaseController):
 
     @pecan.expose('json')
     @supported_queries('subtree_as_list', 'subtree_as_ids', 'parents_as_list', 'parents_as_ids')
-    def get(self, project_id):
+    @mutate_arguments('identity.projects')
+    def get(self, project):
         kwargs = {x: True for x in pecan.request.GET}
-        project = self.identity.projects.get(project_id, **kwargs)
-        utils.check_permissions(project)
+        project = self.identity.projects.get(project, **kwargs)
         return self.format_resource(project)
 
     @pecan.expose('json')
-    def patch(self, project_id):
-        project = self.identity.projects.get(project_id)
-        utils.check_permissions(project)
+    @mutate_arguments('identity.projects')
+    def patch(self, project):
         project = self.identity.projects.update(
             project,
             name=pecan.request.json['project'].get('name'),
@@ -180,9 +156,8 @@ class IdentityV3ProjectsController(BaseController):
         return self.format_resource(project)
 
     @pecan.expose('json')
-    def delete(self, project_id):
-        project = self.identity.projects.get(project_id)
-        utils.check_permissions(project)
+    @mutate_arguments('identity.projects')
+    def delete(self, project):
         self.identity.projects.delete(project)
         pecan.response.status = 204
 

@@ -17,9 +17,8 @@
 import pecan
 import pecan.decorators
 
-from sentinel import utils
 from sentinel.api.controllers.base import BaseController
-from sentinel.decorators import supported_queries
+from sentinel.decorators import supported_queries, mutate_arguments
 
 
 class IdentityV3UsersController(BaseController):
@@ -55,15 +54,13 @@ class IdentityV3UsersController(BaseController):
         return self.format_resource(user)
 
     @pecan.expose('json')
-    def get(self, user_id):
-        user = self.identity.users.get(user_id)
-        utils.check_permissions(user)
+    @mutate_arguments('identity.users')
+    def get(self, user):
         return self.format_resource(user)
 
     @pecan.expose('json')
-    def patch(self, user_id):
-        user = self.identity.users.get(user_id)
-        utils.check_permissions(user)
+    @mutate_arguments('identity.users')
+    def patch(self, user):
         user = self.identity.users.update(
             user,
             name=pecan.request.json['user'].get('name'),
@@ -73,23 +70,20 @@ class IdentityV3UsersController(BaseController):
         return self.format_resource(user)
 
     @pecan.expose('json')
-    def delete(self, user_id):
-        user = self.identity.users.get(user_id)
-        utils.check_permissions(user)
+    @mutate_arguments('identity.users')
+    def delete(self, user):
         self.identity.users.delete(user)
         pecan.response.status = 204
 
     @pecan.expose('json')
-    def groups(self, user_id):
-        user = self.identity.users.get(user_id)
-        utils.check_permissions(user)
+    @mutate_arguments('identity.users')
+    def groups(self, user):
         groups = self.identity.groups.list(user=user, domain=pecan.request.context['domain'])
         return self.format_collection(groups, resource=u'group', collection=u'groups')
 
     @pecan.expose('json')
-    def projects(self, user_id):
-        user = self.identity.users.get(user_id)
-        utils.check_permissions(user)
+    @mutate_arguments('identity.users')
+    def projects(self, user):
         projects = self.identity.projects.list(user=user, domain=pecan.request.context['domain'])
         return self.format_collection(projects, resource=u'project', collection=u'projects')
 
