@@ -18,6 +18,7 @@ import pecan
 
 import sentinel.utils as utils
 from sentinel.api.controllers.base import BaseController
+from sentinel.decorators import supported_queries
 
 
 class ComputeV2QuotaSetsController(BaseController):
@@ -32,6 +33,7 @@ class ComputeV2QuotaSetsController(BaseController):
         }
 
     @pecan.expose('json')
+    @supported_queries()
     def get(self, project_id):
         project = self.identity.projects.get(project_id)
         utils.check_permissions(project)
@@ -39,6 +41,7 @@ class ComputeV2QuotaSetsController(BaseController):
         return self.format_resource(quota)
 
     @pecan.expose('json')
+    @supported_queries()
     def put(self, project_id):
         project = self.identity.projects.get(project_id)
         utils.check_permissions(project)
@@ -46,6 +49,7 @@ class ComputeV2QuotaSetsController(BaseController):
         return self.format_resource(quota)
 
     @pecan.expose('json')
+    @supported_queries()
     def delete(self, project_id):
         project = self.identity.projects.get(project_id)
         utils.check_permissions(project)
@@ -53,6 +57,7 @@ class ComputeV2QuotaSetsController(BaseController):
         pecan.response.status = 202
 
     @pecan.expose('json')
+    @supported_queries()
     def defaults(self, project_id):
         project = self.identity.projects.get(project_id)
         utils.check_permissions(project)
@@ -60,6 +65,7 @@ class ComputeV2QuotaSetsController(BaseController):
         return self.format_resource(quota)
 
     @pecan.expose('json')
+    @supported_queries()
     def detail(self, project_id):
         project = self.identity.projects.get(project_id)
         utils.check_permissions(project)

@@ -19,6 +19,7 @@ import pecan.decorators
 
 from sentinel import utils
 from sentinel.api.controllers.base import BaseController
+from sentinel.decorators import supported_queries
 
 
 class IdentityV3GroupsUsersController(BaseController):
@@ -29,6 +30,7 @@ class IdentityV3GroupsUsersController(BaseController):
 
     @pecan.expose('json')
     @pecan.decorators.accept_noncanonical
+    @supported_queries()
     def get_all(self, group_id):
         group = self.identity.groups.get(group_id)
         utils.check_permissions(group)
@@ -71,6 +73,7 @@ class IdentityV3GroupsController(BaseController):
 
     @pecan.expose('json')
     @pecan.decorators.accept_noncanonical
+    @supported_queries()
     def get_all(self):
         groups = self.identity.groups.list(
             domain=pecan.request.context['domain'])

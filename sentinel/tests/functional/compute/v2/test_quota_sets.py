@@ -14,7 +14,7 @@
 
 from novaclient import exceptions
 
-from sentinel.tests.functional import base, matchers
+from sentinel.tests.functional import base
 from sentinel.tests.functional import client_fixtures as fixtures
 
 QUOTA_VALUE = 666

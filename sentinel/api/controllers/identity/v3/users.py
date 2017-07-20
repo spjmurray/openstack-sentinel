@@ -19,6 +19,7 @@ import pecan.decorators
 
 from sentinel import utils
 from sentinel.api.controllers.base import BaseController
+from sentinel.decorators import supported_queries
 
 
 class IdentityV3UsersController(BaseController):
@@ -35,6 +36,7 @@ class IdentityV3UsersController(BaseController):
 
     @pecan.expose('json')
     @pecan.decorators.accept_noncanonical
+    @supported_queries()
     def get_all(self):
         users = self.identity.users.list(
             domain=pecan.request.context['domain'])

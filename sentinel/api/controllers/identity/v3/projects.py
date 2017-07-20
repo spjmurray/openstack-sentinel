@@ -19,6 +19,7 @@ import pecan.decorators
 
 from sentinel import utils
 from sentinel.api.controllers.base import BaseController
+from sentinel.decorators import supported_queries
 
 
 class IdentityV3ProjectsUsersRolesController(BaseController):
@@ -141,6 +142,7 @@ class IdentityV3ProjectsController(BaseController):
 
     @pecan.expose('json')
     @pecan.decorators.accept_noncanonical
+    @supported_queries()
     def get_all(self):
         projects = self.identity.projects.list(
             domain=pecan.request.context['domain'])
@@ -159,10 +161,9 @@ class IdentityV3ProjectsController(BaseController):
         return self.format_resource(project)
 
     @pecan.expose('json')
+    @supported_queries('subtree_as_list', 'subtree_as_ids', 'parents_as_list', 'parents_as_ids')
     def get(self, project_id):
-        query = pecan.request.GET
-        params = ['subtree_as_list', 'subtree_as_ids', 'parents_as_list', 'parents_as_ids']
-        kwargs = {x: True for x in params if x in query}
+        kwargs = {x: True for x in pecan.request.GET}
         project = self.identity.projects.get(project_id, **kwargs)
         utils.check_permissions(project)
         return self.format_resource(project)
