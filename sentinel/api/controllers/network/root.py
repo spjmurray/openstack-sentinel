@@ -12,16 +12,15 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-"""Root controller for /"""
+import pecan
 
-from sentinel.api.controllers.compute import root as compute
-from sentinel.api.controllers.identity import root as identity
-from sentinel.api.controllers.network import root as network
+from sentinel.api.controllers.network.v2 import root as v2
 
-class RootController(object):
+
+class NetworkController(object):
     def __init__(self):
-        self.compute = compute.ComputeController()
-        self.identity = identity.IdentityController()
-        self.network = network.NetworkController()
+        pass
+
+pecan.route(NetworkController, 'v2.0', v2.NetworkV2Controller())
 
 # vi: ts=4 et:

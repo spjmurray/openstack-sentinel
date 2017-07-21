@@ -18,8 +18,9 @@ Simple wrappers around OpenStack client libraries
 
 from keystoneauth1 import session
 from keystoneauth1.identity import v3
-from keystoneclient.v3 import client as kc
-from novaclient import client as nc
+from keystoneclient.v3 import client as identity_client
+from neutronclient.v2_0 import client as network_client
+from novaclient import client as compute_client
 import pecan
 
 class Clients(object):
@@ -41,11 +42,16 @@ class Clients(object):
     @classmethod
     def identity(cls):
         """Creates a Keystone client"""
-        return kc.Client(session=cls._session())
+        return identity_client.Client(session=cls._session())
 
     @classmethod
     def compute(cls):
         """Creates a Nova client"""
-        return nc.Client(2, session=cls._session())
+        return compute_client.Client(2, session=cls._session())
+
+    @classmethod
+    def network(cls):
+        """Creates a Neutron client"""
+        return network_client.Client(session=cls._session())
 
 # vi: ts=4 et:

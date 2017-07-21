@@ -18,6 +18,7 @@ import pecan
 
 from sentinel.clients import Clients
 
+
 class Scope(object):
     @staticmethod
     def projects():
@@ -34,5 +35,10 @@ class Scope(object):
         # Todo: needs extending to support nested domains
         projects = identity.projects.list(domain=domain)
         return [x.id for x in projects]
+
+    @classmethod
+    def filter(cls, resources):
+        projects = cls.projects()
+        return [x for x in resources if x['tenant_id'] in projects]
 
 # vi: ts=4 et:

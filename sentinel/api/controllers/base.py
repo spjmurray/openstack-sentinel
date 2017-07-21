@@ -43,6 +43,31 @@ class BaseController(pecan.rest.RestController):
         """Get a compute client"""
         return self._get_client('compute')
 
+    @property
+    def network(self):
+        """Get a network client"""
+        return self._get_client('network')
+
+    def filter_resource(self, data, resource=None):
+        """Perform no formatting, just filtering"""
+        if not resource:
+            resource = self.resource
+        payload = {
+            resource: Whitelist.apply(data[resource], resource)
+        }
+        return payload
+
+    def filter_collection(self, data, resource=None, collection=None):
+        """Perform no formatting, just filtering"""
+        if not resource:
+            resource = self.resource
+        if not collection:
+            collection = self.collection
+        payload = {
+            collection: Whitelist.apply(data[collection], resource)
+        }
+        return payload
+
     def format_resource(self, data, resource=None):
         """Format a resource"""
         if not resource:

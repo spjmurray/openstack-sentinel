@@ -12,16 +12,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-"""Root controller for /"""
+from sentinel.api.controllers.network.v2 import quotas
 
-from sentinel.api.controllers.compute import root as compute
-from sentinel.api.controllers.identity import root as identity
-from sentinel.api.controllers.network import root as network
 
-class RootController(object):
+class NetworkV2Controller(object):
     def __init__(self):
-        self.compute = compute.ComputeController()
-        self.identity = identity.IdentityController()
-        self.network = network.NetworkController()
+        self.quotas = quotas.NetworkV2QuotasController()
 
 # vi: ts=4 et:

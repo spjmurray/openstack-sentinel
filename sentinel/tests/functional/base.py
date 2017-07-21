@@ -15,8 +15,9 @@
 import ConfigParser
 from keystoneauth1 import session
 from keystoneauth1.identity import v3
-from keystoneclient.v3 import client as kc
-from novaclient import client as nc
+from keystoneclient.v3 import client as identity_client
+from neutronclient.v2_0 import client as network_client
+from novaclient import client as compute_client
 import testtools
 
 class BaseClient(object):
@@ -26,18 +27,25 @@ class BaseClient(object):
         self.conf = conf
         self._identity = None
         self._compute = None
+        self._network = None
 
     @property
     def identity(self):
         if not self._identity:
-            self._identity = kc.Client(session=self._session())
+            self._identity = identity_client.Client(session=self._session())
         return self._identity
 
     @property
     def compute(self):
         if not self._compute:
-            self._compute = nc.Client(2, session=self._session())
+            self._compute = compute_client.Client(2, session=self._session())
         return self._compute
+
+    @property
+    def network(self):
+        if not self._network:
+            self._network = network_client.Client(session=self._session())
+        return self._network
 
     def _session(self):
         pass

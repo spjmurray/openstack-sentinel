@@ -20,6 +20,7 @@ import time
 import traceback
 
 import keystoneauth1.exceptions
+import neutronclient.common.exceptions
 import pecan
 import pecan.hooks
 import webob
@@ -98,6 +99,8 @@ class ExceptionHook(pecan.hooks.PecanHook):
         # Translate openstack client exceptions back into webob
         if issubclass(exc.__class__, keystoneauth1.exceptions.HttpError):
             return webob.Response(exc.message, status=exc.http_status)
+        if issubclass(exc.__class__, neutronclient.common.exceptions.NeutronClientException):
+            return webob.Response(exc.message, status=exc.status_code)
 
         LOG.error('Unhandled exception')
 

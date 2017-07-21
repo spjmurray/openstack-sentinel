@@ -51,6 +51,7 @@ class IdentityV3AuthController(object):
         expires = issued + timedelta(0, 0, 0, 0, 0, 1, 0)
         identity_base = '{}/identity/v3'.format(pecan.request.host_url)
         compute_base = '{}/compute/v2'.format(pecan.request.host_url)
+        networking_base = '{}/network'.format(pecan.request.host_url)
 
         payload = {
             'token': {
@@ -83,7 +84,17 @@ class IdentityV3AuthController(object):
                                 'url': compute_base,
                             }
                         ]
-                    }
+                    },
+                    {
+                        'name': 'neutron',
+                        'type': 'network',
+                        'endpoints': [
+                            {
+                                'interface': 'public',
+                                'url': networking_base,
+                            }
+                        ]
+                    },
                 ]
             }
         }
