@@ -24,14 +24,11 @@ class Whitelist(object):
 
         # Just pass everything through
         def null_whitelister(resource):
-            if not isinstance(resource, dict):
-                resource = resource.to_dict()
-            return resource
+            return resource.to_dict()
 
         # Selectively return only whitelisted key/value pairs
         def whitelister(resource):
-            if not isinstance(resource, dict):
-                resource = resource.to_dict()
+            resource = resource.to_dict()
             return {k: resource[k] for k in resource if k in whitelist}
 
         # Select the processing engine

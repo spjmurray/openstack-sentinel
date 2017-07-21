@@ -19,6 +19,7 @@ from sentinel.api.controllers import base
 from sentinel.decorators import supported_queries, mutate_arguments
 from sentinel.scope import Scope
 
+
 class NetworkV2QuotasController(base.BaseController):
 
     resource = u'quota'
@@ -33,19 +34,19 @@ class NetworkV2QuotasController(base.BaseController):
     @pecan.decorators.accept_noncanonical
     @supported_queries()
     def get_all(self):
-        quotas = Scope.filter(self.network.list_quotas()[self.collection])
-        return self.format_collection(quotas)
+        quotas = Scope.filter(self.network.list_quotas())
+        return self.format_collection(quotas, links=False)
 
     @pecan.expose('json')
     @mutate_arguments('identity.projects')
     def get(self, project):
-        quota = self.network.show_quota(project.id)[self.resource]
+        quota = self.network.show_quota(project.id)
         return self.format_resource(quota)
 
     @pecan.expose('json')
     @mutate_arguments('identity.projects')
     def put(self, project):
-        quota = self.network.update_quota(project.id, body=pecan.request.json)[self.resource]
+        quota = self.network.update_quota(project.id, body=pecan.request.json)
         return self.format_resource(quota)
 
     @pecan.expose('json')
@@ -57,7 +58,7 @@ class NetworkV2QuotasController(base.BaseController):
     @pecan.expose('json')
     @mutate_arguments('identity.projects')
     def default(self, project):
-        quota = self.network.show_quota_default(project.id)[self.resource]
+        quota = self.network.show_quota_default(project.id)
         return self.format_resource(quota)
 
 # vi: ts=4 et:

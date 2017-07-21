@@ -48,26 +48,6 @@ class BaseController(pecan.rest.RestController):
         """Get a network client"""
         return self._get_client('network')
 
-    def filter_resource(self, data, resource=None):
-        """Perform no formatting, just filtering"""
-        if not resource:
-            resource = self.resource
-        payload = {
-            resource: Whitelist.apply(data[resource], resource)
-        }
-        return payload
-
-    def filter_collection(self, data, resource=None, collection=None):
-        """Perform no formatting, just filtering"""
-        if not resource:
-            resource = self.resource
-        if not collection:
-            collection = self.collection
-        payload = {
-            collection: Whitelist.apply(data[collection], resource)
-        }
-        return payload
-
     def format_resource(self, data, resource=None):
         """Format a resource"""
         if not resource:
@@ -77,20 +57,21 @@ class BaseController(pecan.rest.RestController):
         }
         return payload
 
-    def format_collection(self, data, resource=None, collection=None):
+    def format_collection(self, data, resource=None, collection=None, links=True):
         """Format a colelction of resources"""
         if not resource:
             resource = self.resource
         if not collection:
             collection = self.collection
         payload = {
-            u'links': {
+            collection: Whitelist.apply(data, resource),
+        }
+        if links:
+            payload[u'links'] = {
                 u'next': None,
                 u'previous': None,
                 u'self': pecan.request.path_url,
-            },
-            collection: Whitelist.apply(data, resource),
-        }
+            }
         return payload
 
 # vi: ts=4 et:

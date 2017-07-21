@@ -39,6 +39,6 @@ class Scope(object):
     @classmethod
     def filter(cls, resources):
         projects = cls.projects()
-        return [x for x in resources if x['tenant_id'] in projects]
+        return [x for x in resources if x.tenant_id in projects]
 
 # vi: ts=4 et:
