@@ -31,7 +31,10 @@ class KeystoneGroupsTestCase(base.BaseTestCase):
         self.addCleanup(self.sentinel.identity.groups.delete, group)
         self.assertEqual(group.name, TEST_GROUP)
         self.assertEqual(group.description, TEST_GROUP_DESCRIPTION)
-        self.assertRaises(http.Conflict, self.sentinel.identity.groups.create, TEST_GROUP)
+
+    def test_create_conflict(self):
+        group = self.useFixture(fixtures.Group(self.sentinel))
+        self.assertRaises(http.Conflict, self.sentinel.identity.groups.create, group.entity.name)
 
     def test_update(self):
         group_fix = self.useFixture(fixtures.Group(self.sentinel))
@@ -42,26 +45,54 @@ class KeystoneGroupsTestCase(base.BaseTestCase):
         self.assertEqual(group.name, TEST_GROUP)
         self.assertEqual(group.description, TEST_GROUP_DESCRIPTION)
 
+    def test_update_taint(self):
+        group = self.useFixture(fixtures.Group(self.openstack))
+        self.assertRaises(
+            http.Forbidden,
+            self.sentinel.identity.groups.update,
+            group.entity,
+            name=TEST_GROUP)
+
     def test_get(self):
         group = self.useFixture(fixtures.Group(self.sentinel))
         self.sentinel.identity.groups.get(group.entity)
+
+    def test_get_taint(self):
+        group = self.useFixture(fixtures.Group(self.openstack))
+        self.assertRaises(http.Forbidden, self.sentinel.identity.groups.get, group.entity)
 
     def test_delete(self):
         group = self.sentinel.identity.groups.create(TEST_GROUP)
         self.sentinel.identity.groups.delete(group)
         self.assertRaises(http.NotFound, self.sentinel.identity.groups.delete, group)
 
+    def test_delete_taint(self):
+        group = self.useFixture(fixtures.Group(self.openstack))
+        self.assertRaises(http.Forbidden, self.sentinel.identity.groups.delete, group.entity)
+
     def test_list(self):
-        sp_group = self.useFixture(fixtures.Group(self.openstack))
         group = self.useFixture(fixtures.Group(self.sentinel))
         groups = self.sentinel.identity.groups.list()
         self.assertThat(group.entity, matchers.IsInCollection(groups))
-        self.assertThat(sp_group.entity, matchers.IsNotInCollection(groups))
+
+    def test_list_filtering(self):
+        group = self.useFixture(fixtures.Group(self.openstack))
+        groups = self.sentinel.identity.groups.list()
+        self.assertThat(group.entity, matchers.IsNotInCollection(groups))
 
     def test_group_add_user(self):
         user = self.useFixture(fixtures.User(self.sentinel))
         group = self.useFixture(fixtures.Group(self.sentinel))
         self.sentinel.identity.users.add_to_group(user.entity, group.entity)
+
+    def test_group_add_user_taint(self):
+        user = self.useFixture(fixtures.User(self.openstack))
+        group = self.useFixture(fixtures.Group(self.sentinel))
+        self.assertRaises(
+            http.Forbidden,
+            self.sentinel.identity.users.add_to_group,
+            user.entity,
+            group.entity)
 
     def def_group_remove_user(self):
         user = self.useFixture(fixtures.User(self.sentinel))
@@ -70,6 +101,15 @@ class KeystoneGroupsTestCase(base.BaseTestCase):
         self.sentinel.identity.users.remove_from_group(user.entity, group.entity)
         self.assertRaises(
             http.NotFound,
+            self.sentinel.identity.users.remove_from_group,
+            user.entity,
+            group.entity)
+
+    def test_group_remove_user_taint(self):
+        user = self.useFixture(fixtures.User(self.openstack))
+        group = self.useFixture(fixtures.Group(self.sentinel))
+        self.assertRaises(
+            http.Forbidden,
             self.sentinel.identity.users.remove_from_group,
             user.entity,
             group.entity)
@@ -83,8 +123,7 @@ class KeystoneGroupsTestCase(base.BaseTestCase):
             user.entity,
             group.entity)
         self.sentinel.identity.users.add_to_group(user.entity, group.entity)
-        in_group = self.sentinel.identity.users.check_in_group(user.entity, group.entity)
-        self.assertEqual(in_group, True)
+        self.sentinel.identity.users.check_in_group(user.entity, group.entity)
 
     def test_group_list_users(self):
         user = self.useFixture(fixtures.User(self.sentinel))

@@ -21,7 +21,6 @@ TEST_USER = 'test'
 TEST_USER_EMAIL = 'test@example.com'
 TEST_USER_DESCRIPTION = 'Sentinel Test User'
 
-SP_USER = 'sp_user'
 
 class KeystoneUsersTestCase(base.BaseTestCase):
 
@@ -35,7 +34,10 @@ class KeystoneUsersTestCase(base.BaseTestCase):
         self.assertEqual(user.email, TEST_USER_EMAIL)
         self.assertEqual(user.description, TEST_USER_DESCRIPTION)
         self.assertEqual(user.enabled, True)
-        self.assertRaises(http.Conflict, self.sentinel.identity.users.create, TEST_USER)
+
+    def test_create_conflict(self):
+        user = self.useFixture(fixtures.User(self.sentinel))
+        self.assertRaises(http.Conflict, self.sentinel.identity.users.create, user.entity.name)
 
     def test_update(self):
         user_fix = self.useFixture(fixtures.User(self.sentinel))
@@ -50,21 +52,40 @@ class KeystoneUsersTestCase(base.BaseTestCase):
         self.assertEqual(user.description, TEST_USER_DESCRIPTION)
         self.assertEqual(user.enabled, False)
 
+    def test_update_taint(self):
+        user = self.useFixture(fixtures.User(self.openstack))
+        self.assertRaises(
+            http.Forbidden,
+            self.sentinel.identity.users.update,
+            user.entity,
+            name=TEST_USER)
+
     def test_get(self):
         user = self.useFixture(fixtures.User(self.sentinel))
         self.sentinel.identity.users.get(user.entity)
+
+    def test_get_taint(self):
+        user = self.useFixture(fixtures.User(self.openstack))
+        self.assertRaises(http.Forbidden, self.sentinel.identity.users.get, user.entity)
 
     def test_delete(self):
         user = self.sentinel.identity.users.create(TEST_USER)
         self.sentinel.identity.users.delete(user)
         self.assertRaises(http.NotFound, self.sentinel.identity.users.delete, user)
 
+    def test_delete_taint(self):
+        user = self.useFixture(fixtures.User(self.openstack))
+        self.assertRaises(http.Forbidden, self.sentinel.identity.users.delete, user.entity)
+
     def test_list(self):
-        sp_user = self.useFixture(fixtures.User(self.openstack))
         user = self.useFixture(fixtures.User(self.sentinel))
         users = self.sentinel.identity.users.list()
         self.assertThat(user.entity, matchers.IsInCollection(users))
-        self.assertThat(sp_user.entity, matchers.IsNotInCollection(users))
+
+    def test_list_filtering(self):
+        user = self.useFixture(fixtures.User(self.openstack))
+        users = self.sentinel.identity.users.list()
+        self.assertThat(user.entity, matchers.IsNotInCollection(users))
 
     def test_group_list(self):
         group_user = self.useFixture(fixtures.GroupUser(self.sentinel))

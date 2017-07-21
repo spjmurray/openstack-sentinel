@@ -34,10 +34,13 @@ class KeystoneUsersTestCase(base.BaseTestCase):
         self.assertEqual(project.description, TEST_PROJECT_DESCRIPTION)
         self.assertEqual(project.enabled, True)
         self.assertNotEqual(project.domain_id, TEST_PROJECT_DOMAIN)
+
+    def test_create_conflict(self):
+        project = self.useFixture(fixtures.Project(self.sentinel))
         self.assertRaises(
             http.Conflict,
             self.sentinel.identity.projects.create,
-            TEST_PROJECT,
+            project.entity.name,
             'default')
 
     def test_nested_create(self):
@@ -54,6 +57,22 @@ class KeystoneUsersTestCase(base.BaseTestCase):
         self.assertEqual(project.description, TEST_PROJECT_DESCRIPTION)
         self.assertEqual(project.enabled, False)
 
+    def test_update_taint(self):
+        project = self.useFixture(fixtures.Project(self.openstack))
+        self.assertRaises(
+            http.Forbidden,
+            self.sentinel.identity.projects.update,
+            project.entity,
+            description=TEST_PROJECT_DESCRIPTION)
+
+    def test_get(self):
+        project = self.useFixture(fixtures.Project(self.sentinel))
+        self.sentinel.identity.projects.get(project.entity)
+
+    def test_get_taint(self):
+        project = self.useFixture(fixtures.Project(self.openstack))
+        self.assertRaises(http.Forbidden, self.sentinel.identity.projects.get, project.entity)
+
     def test_nested_get(self):
         parent = self.useFixture(fixtures.Project(self.sentinel))
         child = self.useFixture(fixtures.Project(self.sentinel, parent=parent))
@@ -63,10 +82,13 @@ class KeystoneUsersTestCase(base.BaseTestCase):
         self.assertIn(parent.entity.id, project.parents)
 
     def test_list(self):
-        sp_project = self.useFixture(fixtures.Project(self.openstack))
         project = self.useFixture(fixtures.Project(self.sentinel))
         projects = self.sentinel.identity.projects.list()
         self.assertThat(project.entity, matchers.IsInCollection(projects))
-        self.assertThat(sp_project.entity, matchers.IsNotInCollection(projects))
+
+    def test_list_filtering(self):
+        project = self.useFixture(fixtures.Project(self.openstack))
+        projects = self.sentinel.identity.projects.list()
+        self.assertThat(project.entity, matchers.IsNotInCollection(projects))
 
 # vi: ts=4 et:
