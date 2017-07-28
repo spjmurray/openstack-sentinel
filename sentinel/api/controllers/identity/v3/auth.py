@@ -52,6 +52,7 @@ class IdentityV3AuthController(object):
         identity_base = '{}/identity/v3'.format(pecan.request.host_url)
         compute_base = '{}/compute/v2'.format(pecan.request.host_url)
         networking_base = '{}/network'.format(pecan.request.host_url)
+        volume_base = '{}/volume/v2'.format(pecan.request.host_url)
 
         payload = {
             'token': {
@@ -93,6 +94,16 @@ class IdentityV3AuthController(object):
                                 'interface': 'public',
                                 'url': networking_base,
                             }
+                        ]
+                    },
+                    {
+                        'name': 'cinderv2',
+                        'type': 'volumev2',
+                        'endpoints': [
+                            {
+                                'interface': 'public',
+                                'url': volume_base,
+                            },
                         ]
                     },
                 ]

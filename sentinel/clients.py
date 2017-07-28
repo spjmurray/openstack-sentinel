@@ -17,6 +17,7 @@ Simple wrappers around OpenStack client libraries
 """
 
 import copy
+from cinderclient.v2 import client as volume_client
 from keystoneauth1 import session
 from keystoneauth1.identity import v3
 from keystoneclient.v3 import client as identity_client
@@ -106,5 +107,10 @@ class Clients(object):
     def network(cls):
         """Creates a Neutron client"""
         return NeutronClient(session=cls._session())
+
+    @classmethod
+    def volume(cls):
+        """Creates a Clinder client"""
+        return volume_client.Client(session=cls._session())
 
 # vi: ts=4 et:

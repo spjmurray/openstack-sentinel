@@ -48,6 +48,11 @@ class BaseController(pecan.rest.RestController):
         """Get a network client"""
         return self._get_client('network')
 
+    @property
+    def volume(self):
+        """Get a colume client"""
+        return self._get_client('volume')
+
     def format_resource(self, data, resource=None):
         """Format a resource"""
         if not resource:

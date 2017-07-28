@@ -13,6 +13,7 @@
 #    under the License.
 
 import ConfigParser
+from cinderclient.v2 import client as volume_client
 from keystoneauth1 import session
 from keystoneauth1.identity import v3
 from keystoneclient.v3 import client as identity_client
@@ -28,6 +29,7 @@ class BaseClient(object):
         self._identity = None
         self._compute = None
         self._network = None
+        self._volume = None
 
     @property
     def identity(self):
@@ -46,6 +48,12 @@ class BaseClient(object):
         if not self._network:
             self._network = network_client.Client(session=self._session())
         return self._network
+
+    @property
+    def volume(self):
+        if not self._volume:
+            self._volume = volume_client.Client(session=self._session())
+        return self._volume
 
     def _session(self):
         pass
