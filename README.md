@@ -65,7 +65,7 @@ python's global search paths.
 
     sudo -H pip install --upgrade --prefix /usr/local/ .
 
-## dpkg
+### dpkg
 
 Production deployments will want to have native packages available.  We use FPM
 to streamline the process.
@@ -115,7 +115,9 @@ And finally to issue certificates to IdPs:
 
     ./easyrsa build-client-full my.trusted.idp.com nopass
 
-Remember to keep your CA private key physically locked away.
+Remember to keep your CA private key physically locked away.  It's also far
+more secure for the IdP to create their key and certificate signing request
+locally, then have the CA sign the CSR.
 
 ### Apache
 
@@ -195,7 +197,88 @@ when creating a client certificate, to their domain ID.
 
 ## IdP Onboarding
 
-TODO
+First thing you need to do is create the IdP's domain:
+
+    openstack domain create my.trusted.idp.com
+
+Then we create a role in the domain to be associated by the IdP to their users,
+groups and projects.  The IdP may ask for a specific role name to ease integration
+with their management application.
+
+    openstack role create --domain my.trusted.idp.com user
+
+Finally we need to apply inference rules so that the domain role maps onto a
+SP cloud role.  At present this functionality isn't available via the openstack
+client, so we have to add this in manually.  A simple script may look like the
+following.
+
+    #!/usr/bin/python
+    import os
+    import sys
+    
+    from keystoneauth1 import session
+    from keystoneauth1.identity import v3
+    from keystoneclient.v3 import client
+    
+    auth = v3.Password(auth_url='https://cloud.example.com:5000/v3',
+                       username='admin',
+                       password='password',
+                       user_domain_name='default',
+                       project_name='admin',
+                       project_domain_name='default')
+    session = session.Session(auth=auth)
+    keystone = client.Client(session=session)
+    keystone.inference_rules.create(sys.argv[1], sys.argv[2])
+
+This consumes UUIDs which map a prior role to an inferred role.  You can infer
+multiple roles if the underlying SP cloud requires multiple roles in order to
+provide full functionality.
+
+    ./inference.py c06c73240ff44190a8644b1d626510c3 a6a386defcb0438fa013dbe038562c39
+
+Now you know the IdP's certificate CN and their domain you can add the domain
+mapping into Sentinel's main configuration and reload the WSGI application.
+
+### Connecting to Sentinel
+
+The IdP should be in possession now of the SP's Sentinel identity endpoint,
+their private and public keys and can now start performing administrative
+operations.  The following section shows how to interact via popular libraries.
+
+#### Python
+
+    #!/usr/bin/python
+    
+    from keystoneauth1 import session
+    from keystoneauth1.identity import v3
+    from keystoneclient.v3 import client
+    
+    auth = v3.Password(auth_url='https://sentinel.example.com:4567/identity/v3')
+    session = session.Session(auth=auth,
+                              verify='ca.crt',
+                              cert=('my.trusted.idp.com.crt', 'my.trusted.idp.com.key'))
+    identity = client.Client(session=session)
+
+#### Ruby (Fog OpenStack)
+
+    #!/usr/bin/ruby
+    
+    require 'fog/openstack'
+    require 'openssl'
+    
+    options = {
+      :openstack_auth_url => 'https://sentinel.example.com:4567/identity/v3/auth/tokens',
+      :openstack_username => 'required-by-library',
+      :openstack_api_key  => 'required-by-library',
+      :connection_options => {
+        :ssl_verify_peer => true,
+        :ssl_ca_file     => 'ca.crt',
+        :client_cert     => 'my.trusted.idp.com.crt',
+        :client_key      => 'my.trusted.idp.com.key',
+      },
+    }
+    
+    compute = Fog::Compute::OpenStack.new(options)
 
 ## Testing
 
