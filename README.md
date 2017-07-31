@@ -2,10 +2,28 @@
 
 ## Description
 
-Sits in front of your federated cloud allowing admin level access scoped to trusted
-parties.
+Sits in front of your federated cloud allowing admin level access to trusted parties,
+with collections scoped to their specific domain.
 
-### Detail
+## Contents
+
+1. [Detailed Description](#detailed-description)
+    1. [Organization](#organization)
+    2. [Technical Details](#technical-details)
+2. [Installation](#installation)
+    1. [pip](#pip)
+    2. [dpkg](#dpkg)
+3. [Configuration](#configuration)
+    1. [PKI](#pki)
+    2. [Apache](#apache)
+    3. [Sentinel](#sentinel)
+4. [IdP Onboarding](#idp-onboarding)
+    1. [Connecting to Sentinel](#connecting-to-sentinel)
+        1. [Python](#python)
+        2. [Ruby](#ruby-fog-openstack)
+5. [Testing](#testing)
+
+## Detailed Description
 
 Although Keystone has come along leaps and bounds as regards domain admins the rest
 of openstack has been slow to catch up.  Granting admin rights to a user means that
@@ -80,11 +98,6 @@ to streamline the process.
       --depends python-neutronclient \
       --depends python-cinderclient \
       .
-
-If you are hacking and don't want to build release packages then you can simply
-use PIP:
-
-    sudo -H pip install --upgrade --prefix /usr/local/ .
 
 ## Configuration
 
