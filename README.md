@@ -91,8 +91,13 @@ use PIP:
 ### PKI
 
 We need to create a secure CA to authenticate clients and encrypt traffic across
-the internet.  Typically easyrsa is a good and simple option.  First create the
-CA:
+the internet.  Typically easyrsa is a good and simple option.
+
+    git clone https://github.com/OpenVPN/easy-rsa
+    cd easy-rsa/easyrsa3
+    ./easyrsa init-pki
+
+First create the CA:
 
     ./easyrsa build-ca
 
@@ -104,7 +109,7 @@ Next generate the server certificate.  Ensure you set the SAN as learning the
 client hostname from the CN field has been deprecated for a long time and will
 result in client warnings:
 
-    ./easyrsa --subject-alt-name DNS:sentinel.example.com build-server-full sentinel.example.com nopass
+    ./easyrsa --subject-alt-name=DNS:sentinel.example.com build-server-full sentinel.example.com nopass
 
 And finally to issue certificates to IdPs:
 
@@ -153,7 +158,40 @@ in order to get access to the client identity.
 
 ### Sentinel
 
-TODO
+Sentinel's main configuration file is a simple ini based affair with many similarities
+to standard OpenStack components.  You should only need to modify the `keystone_authtoken`
+section which identifies the SP cloud identity endpoint and administrative access
+credentials.
+
+    [keystone_authtoken]
+    auth_url = https://cloud.example.com:5000/v3
+    username = admin
+    password = password
+    user_domain_name = default
+    project_name = admin
+    project_domain_name = default
+    
+    [whitelist]
+    group = description,domain_id,id,name
+    project = description,domain_id,enabled,id,is_domain,name,parents,parent_id,subtree
+    role = id,name
+    user = description,domain_id,email,enabled,id,name
+
+The whitelisting depicted selects which fields are not filtered out of queries that
+return resources or collections.  This is purely illustrative, however it gives us
+a mechanism to remove fields which are unnecessary e.g. an IdP doesn't need to know
+about hypervisors servers are resident on, and my leak information about the SP
+cloud architecture.
+
+The other important configuration is the domain mapping.  When an IdP is onboarded
+the SP will create a domain for them to create users, groups and projects in etc.
+This is simply a JSON dictionary which maps the certificate CN which you specified
+when creating a client certificate, to their domain ID.
+
+    {
+      "my.trusted.idp.com": "4ca11fb8c4f943d4b69c0205dcb74603"
+    }
+
 
 ## IdP Onboarding
 
