@@ -93,7 +93,7 @@ class BaseTestCase(testtools.TestCase):
 
         # Load up the configuration
         conf = ConfigParser.ConfigParser()
-        conf.read('/etc/sentinel/sentinel-test.conf')
+        conf.read('/etc/sentinel/sentinel.conf')
 
         # Register client managers
         self.sentinel = SentinelClient(conf)
