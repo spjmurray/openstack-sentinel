@@ -47,6 +47,7 @@ class IdentityV3UsersController(BaseController):
         user = self.identity.users.create(
             pecan.request.json['user']['name'],
             domain=pecan.request.context['domain'],
+            password=pecan.request.json['user'].get('password'), # Required for testing
             email=pecan.request.json['user'].get('email'),
             description=pecan.request.json['user'].get('description'),
             enabled=pecan.request.json['user'].get('enabled'))

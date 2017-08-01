@@ -50,8 +50,13 @@ class BaseController(pecan.rest.RestController):
 
     @property
     def volume(self):
-        """Get a colume client"""
+        """Get a volume client"""
         return self._get_client('volume')
+
+    @property
+    def metering(self):
+        """Get a metering client"""
+        return self._get_client('metering')
 
     def format_resource(self, data, resource=None):
         """Format a resource"""

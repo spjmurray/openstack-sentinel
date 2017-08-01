@@ -53,6 +53,7 @@ class IdentityV3AuthController(object):
         compute_base = '{}/compute/v2'.format(pecan.request.host_url)
         networking_base = '{}/network'.format(pecan.request.host_url)
         volume_base = '{}/volume/v2'.format(pecan.request.host_url)
+        metering_base = '{}/metering'.format(pecan.request.host_url)
 
         payload = {
             'token': {
@@ -103,6 +104,16 @@ class IdentityV3AuthController(object):
                             {
                                 'interface': 'public',
                                 'url': volume_base,
+                            },
+                        ]
+                    },
+                    {
+                        'name': 'ceilometer',
+                        'type': 'metering',
+                        'endpoints': [
+                            {
+                                'interface': 'public',
+                                'url': metering_base,
                             },
                         ]
                     },

@@ -39,6 +39,10 @@ class Scope(object):
     @classmethod
     def filter(cls, resources):
         projects = cls.projects()
-        return [x for x in resources if x.tenant_id in projects]
+        # Hack around the fact that OpenStack is a totally inconsistent mess
+        project_property = 'project_id'
+        if resources and not hasattr(resources[0], 'project_id'):
+            project_property = 'tenant_id'
+        return [x for x in resources if getattr(x, project_property) in projects]
 
 # vi: ts=4 et:

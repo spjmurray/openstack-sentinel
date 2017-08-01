@@ -13,6 +13,7 @@
 #    under the License.
 
 import ConfigParser
+from ceilometerclient.v2 import client as metering_client
 from cinderclient.v2 import client as volume_client
 from keystoneauth1 import session
 from keystoneauth1.identity import v3
@@ -24,12 +25,17 @@ import testtools
 class BaseClient(object):
     """Base client which creates and caches clients"""
 
-    def __init__(self, conf):
-        self.conf = conf
+    def __init__(self):
+
+        # Load up the configuration
+        self.conf = ConfigParser.ConfigParser()
+        self.conf.read('/etc/sentinel/sentinel.conf')
+
         self._identity = None
         self._compute = None
         self._network = None
         self._volume = None
+        self._metering = None
 
     @property
     def identity(self):
@@ -55,14 +61,20 @@ class BaseClient(object):
             self._volume = volume_client.Client(session=self._session())
         return self._volume
 
+    @property
+    def metering(self):
+        if not self._metering:
+            self._metering = metering_client.Client(session=self._session())
+        return self._metering
+
     def _session(self):
         pass
 
 class SentinelClient(BaseClient):
     """Sentinel client which creates sessions for sentinel"""
 
-    def __init__(self, conf):
-        super(SentinelClient, self).__init__(conf)
+    def __init__(self):
+        super(SentinelClient, self).__init__()
 
     def _session(self):
         auth = v3.Password(auth_url=self.conf.get('sentinel_auth', 'auth_uri'))
@@ -75,8 +87,8 @@ class SentinelClient(BaseClient):
 class OpenStackClient(BaseClient):
     """OpenStack client that creates sessions for native clouds"""
 
-    def __init__(self, conf):
-        super(OpenStackClient, self).__init__(conf)
+    def __init__(self):
+        super(OpenStackClient, self).__init__()
 
     def _session(self):
         required = ['auth_url', 'username', 'password', 'user_domain_name',
@@ -86,18 +98,32 @@ class OpenStackClient(BaseClient):
         return session.Session(auth=auth)
 
 
+class FederatedUserClient(BaseClient):
+    """Client based on OpenStack client objects"""
+
+    def __init__(self, user, project):
+        super(FederatedUserClient, self).__init__()
+        self.user = user
+        self.project = project
+
+    def _session(self):
+        auth = v3.Password(auth_url=self.conf.get('keystone_authtoken', 'auth_url'),
+                           user_id=self.user.id,
+                           password='password',
+                           #user_domain_id=self.user.domain_id,
+                           project_id=self.project.id)
+                           #project_domain_id=self.project.domain_id)
+        return session.Session(auth=auth)
+
+
 class BaseTestCase(testtools.TestCase):
 
     def setUp(self):
         super(BaseTestCase, self).setUp()
 
-        # Load up the configuration
-        conf = ConfigParser.ConfigParser()
-        conf.read('/etc/sentinel/sentinel.conf')
-
         # Register client managers
-        self.sentinel = SentinelClient(conf)
-        self.openstack = OpenStackClient(conf)
+        self.sentinel = SentinelClient()
+        self.openstack = OpenStackClient()
 
 
 # vi: ts=4 et:

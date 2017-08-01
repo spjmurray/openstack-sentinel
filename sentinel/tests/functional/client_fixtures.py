@@ -12,6 +12,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import time
 import uuid
 
 import fixtures
@@ -33,7 +34,9 @@ class FixtureBase(fixtures.Fixture):
 
 class User(FixtureBase):
     def _setUp(self):
-        self.entity = self.client.identity.users.create(_get_unique_name())
+        self.entity = self.client.identity.users.create(
+            _get_unique_name(),
+            password='password')
         self.addCleanup(self.client.identity.users.delete, self.entity)
 
 
@@ -82,7 +85,6 @@ class UserProjectGrant(FixtureBase):
             user=self.user.entity,
             project=self.project.entity)
 
-
 class GroupProjectGrant(FixtureBase):
     def _setUp(self):
         self.group = self.useFixture(Group(self.client))
@@ -93,5 +95,20 @@ class GroupProjectGrant(FixtureBase):
             group=self.group.entity,
             project=self.project.entity)
 
+class Server(FixtureBase):
+    def _setUp(self):
+        image = self.client.compute.images.list()[0]
+        flavor = self.client.compute.flavors.list()[0]
+        self.entity = self.client.compute.servers.create(
+            _get_unique_name(),
+            image.id,
+            flavor.id)
+        self.addCleanup(self.entity.delete)
+        # Wait for the server to become available ...
+        while True:
+            time.sleep(5)
+            server = self.client.compute.servers.get(self.entity.id)
+            if server.status == 'ACTIVE':
+                break
 
 # vi: ts=4 et:

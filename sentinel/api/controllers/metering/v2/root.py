@@ -12,20 +12,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-"""Root controller for /"""
+from sentinel.api.controllers.metering.v2 import meters
 
-from sentinel.api.controllers.compute import root as compute
-from sentinel.api.controllers.identity import root as identity
-from sentinel.api.controllers.network import root as network
-from sentinel.api.controllers.volume import root as volume
-from sentinel.api.controllers.metering import root as metering
 
-class RootController(object):
+class MeteringV2Controller(object):
     def __init__(self):
-        self.compute = compute.ComputeController()
-        self.identity = identity.IdentityController()
-        self.network = network.NetworkController()
-        self.volume = volume.VolumeController()
-        self.metering = metering.MeteringController()
+        self.meters = meters.MeteringV2MetersController()
 
 # vi: ts=4 et:

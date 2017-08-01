@@ -17,6 +17,7 @@ Simple wrappers around OpenStack client libraries
 """
 
 import copy
+from ceilometerclient.v2 import client as metering_client
 from cinderclient.v2 import client as volume_client
 from keystoneauth1 import session
 from keystoneauth1.identity import v3
@@ -112,5 +113,10 @@ class Clients(object):
     def volume(cls):
         """Creates a Clinder client"""
         return volume_client.Client(session=cls._session())
+
+    @classmethod
+    def metering(cls):
+        """Creates a Ceilometer client"""
+        return metering_client.Client(session=cls._session())
 
 # vi: ts=4 et:
