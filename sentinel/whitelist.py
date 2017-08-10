@@ -20,7 +20,7 @@ class Whitelist(object):
 
     @staticmethod
     def apply(resources, name):
-        whitelist = pecan.request.context['conf'].get('whitelist', name).split(',')
+        whitelist = pecan.request.conf.get('whitelist', name).split(',')
 
         # Just pass everything through
         def null_whitelister(resource):

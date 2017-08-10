@@ -122,7 +122,7 @@ class IdentityV3ProjectsController(BaseController):
     @supported_queries()
     def get_all(self):
         projects = self.identity.projects.list(
-            domain=pecan.request.context['domain'])
+            domain=pecan.request.domain_id)
         return self.format_collection(projects)
 
     @pecan.expose('json')
@@ -130,7 +130,7 @@ class IdentityV3ProjectsController(BaseController):
     def post(self):
         project = self.identity.projects.create(
             pecan.request.json['project'].get('name'),
-            pecan.request.context['domain'],
+            pecan.request.domain_id,
             description=pecan.request.json['project'].get('description'),
             enabled=pecan.request.json['project'].get('enabled'),
             parent=pecan.request.json['project'].get('parent_id'))

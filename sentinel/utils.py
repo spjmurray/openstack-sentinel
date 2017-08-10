@@ -17,7 +17,7 @@ import pecan
 def check_permissions(*resources):
     """Check we have access to this resource or raise an error"""
     for resource in resources:
-        if resource.domain_id != pecan.request.context['domain']:
+        if resource.domain_id != pecan.request.domain_id:
             pecan.abort(403, 'unauthorized access a resource outside of your domain')
 
 # vi: ts=4 et:

@@ -84,7 +84,7 @@ class Clients(object):
     @staticmethod
     def _session():
         """Creates an OpenStack session from configuration data"""
-        conf = pecan.request.context['conf']
+        conf = pecan.request.conf
 
         required = ['auth_url', 'username', 'password', 'user_domain_name',
                     'project_name', 'project_domain_name']

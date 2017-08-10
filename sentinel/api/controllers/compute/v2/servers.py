@@ -51,10 +51,10 @@ class ComputeV2ServersController(BaseController):
         # If the client requested all projects return those within the
         # domain scope, same applies for a domain scoped token, otherwise
         # scope to the specifc project
-        if self._all_projects() or not pecan.request.context['token'].project_id:
+        if self._all_projects() or not pecan.request.token.project_id:
             projects = Scope.projects()
         else:
-            projects = [pecan.request.context['token'].project_id]
+            projects = [pecan.request.token.project_id]
 
         # Must do a detailed search here as it returns the tenant_id field
         servers = self.compute.servers.list(search_opts={'all_tenants': 'True'})

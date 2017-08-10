@@ -28,7 +28,7 @@ class Scope(object):
            whether an action can be performed on a resource"""
 
         # Domain is mapped from the certificate DN
-        domain = pecan.request.context['domain']
+        domain = pecan.request.domain_id
         identity = Clients.identity()
 
         # Get a domain filtered list of projects and return the IDs

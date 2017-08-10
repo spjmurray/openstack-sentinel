@@ -25,10 +25,7 @@ LOG = logging.getLogger(__name__)
 
 class LogFilter(logging.Filter):
     def filter(self, record):
-        try:
-            record.user = pecan.request.context.get('domain') or '-'
-        except AttributeError:
-            record.user = '-'
+        record.user = getattr(pecan.request, 'domain_id', '-')
         return True
 
 

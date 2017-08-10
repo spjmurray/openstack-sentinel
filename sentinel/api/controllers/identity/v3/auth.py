@@ -33,11 +33,11 @@ class IdentityV3AuthController(object):
             project = pecan.request.json['auth']['scope']['project']['id']
             token = Token(project_id=project)
             LOG.info('Scoped authentication request by %s for %s',
-                     pecan.request.context['user'], project)
+                     pecan.request.user, project)
         except KeyError:
             token = Token()
             LOG.info('Domain scoped authentication request by %s',
-                     pecan.request.context['user'])
+                     pecan.request.user)
 
         # Reject scoping to a project not in our domain
         if token.project_id and token.project_id not in Scope.projects():

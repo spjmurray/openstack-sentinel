@@ -27,10 +27,10 @@ class BaseController(pecan.rest.RestController):
 
     def _get_client(self, name):
         """Get a cached client or lazily create a new one"""
-        client = pecan.request.context.get(name)
+        client = getattr(pecan.request, name, None)
         if not client:
             client = getattr(Clients, name)()
-            pecan.request.context[name] = client
+            setattr(pecan.request, name, client)
         return client
 
     @property

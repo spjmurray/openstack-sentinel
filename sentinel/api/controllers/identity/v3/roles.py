@@ -32,7 +32,7 @@ class IdentityV3RolesController(BaseController):
     @supported_queries()
     def get_all(self):
         roles = self.identity.roles.list(
-            domain_id=pecan.request.context['domain'])
+            domain_id=pecan.request.domain_id)
         return self.format_collection(roles)
 
     @pecan.expose('json')

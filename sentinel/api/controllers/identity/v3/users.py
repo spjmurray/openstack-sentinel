@@ -38,7 +38,7 @@ class IdentityV3UsersController(BaseController):
     @supported_queries()
     def get_all(self):
         users = self.identity.users.list(
-            domain=pecan.request.context['domain'])
+            domain=pecan.request.domain_id)
         return self.format_collection(users)
 
     @pecan.expose('json')
@@ -46,7 +46,7 @@ class IdentityV3UsersController(BaseController):
     def post(self):
         user = self.identity.users.create(
             pecan.request.json['user']['name'],
-            domain=pecan.request.context['domain'],
+            domain=pecan.request.domain_id,
             password=pecan.request.json['user'].get('password'), # Required for testing
             email=pecan.request.json['user'].get('email'),
             description=pecan.request.json['user'].get('description'),
@@ -79,13 +79,13 @@ class IdentityV3UsersController(BaseController):
     @pecan.expose('json')
     @mutate_arguments('identity.users')
     def groups(self, user):
-        groups = self.identity.groups.list(user=user, domain=pecan.request.context['domain'])
+        groups = self.identity.groups.list(user=user, domain=pecan.request.domain_id)
         return self.format_collection(groups, resource=u'group', collection=u'groups')
 
     @pecan.expose('json')
     @mutate_arguments('identity.users')
     def projects(self, user):
-        projects = self.identity.projects.list(user=user, domain=pecan.request.context['domain'])
+        projects = self.identity.projects.list(user=user, domain=pecan.request.domain_id)
         return self.format_collection(projects, resource=u'project', collection=u'projects')
 
 # vi: ts=4 et:

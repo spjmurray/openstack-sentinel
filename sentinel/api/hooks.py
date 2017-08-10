@@ -37,7 +37,7 @@ class ConfigHook(pecan.hooks.PecanHook):
         self.conf = conf
 
     def on_route(self, state):
-        state.request.context['conf'] = self.conf
+        state.request.conf = self.conf
 
 class DomainHook(pecan.hooks.PecanHook):
     """Translates X.509 DN into a domain ID and attaches to requests"""
@@ -48,10 +48,10 @@ class DomainHook(pecan.hooks.PecanHook):
             mapping = json.load(f)
         # Extract the username from the certificate DN and attach to the request
         user = state.request.environ['SSL_CLIENT_S_DN'].split('=')[1]
-        state.request.context['user'] = user
+        state.request.user = user
         # Try find a valid mapping from user to domain ID
         try:
-            state.request.context['domain'] = mapping[user]
+            state.request.domain_id = mapping[user]
         except KeyError:
             pecan.abort(401)
 
@@ -61,19 +61,19 @@ class TokenHook(pecan.hooks.PecanHook):
     def on_route(self, state):
         try:
             token = pecan.request.environ['X-Subject-Token']
-            state.request.context['token'] = Token.unmarshal(token)
+            state.request.token = Token.unmarshal(token)
         except KeyError:
             # This will legitimately fault on token requests
-            state.request.context['token'] = None
+            state.request.token = None
 
 class LoggerHook(pecan.hooks.PecanHook):
     """Print out requests in the log"""
 
     def on_route(self, state):
-        state.request.context['start'] = time.time()
+        state.request.start = time.time()
 
     def after(self, state):
-        delta = time.time() - state.request.context['start']
+        delta = time.time() - state.request.start
         LOG.info('%s "%s %s" status: %d time: %0.3f',
                  state.request.client_addr,
                  state.request.method,

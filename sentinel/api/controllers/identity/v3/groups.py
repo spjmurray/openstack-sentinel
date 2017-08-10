@@ -68,7 +68,7 @@ class IdentityV3GroupsController(BaseController):
     @supported_queries()
     def get_all(self):
         groups = self.identity.groups.list(
-            domain=pecan.request.context['domain'])
+            domain=pecan.request.domain_id)
         return self.format_collection(groups)
 
     @pecan.expose('json')
@@ -76,7 +76,7 @@ class IdentityV3GroupsController(BaseController):
     def post(self):
         group = self.identity.groups.create(
             pecan.request.json['group'].get('name'),
-            pecan.request.context['domain'],
+            pecan.request.domain_id,
             description=pecan.request.json['group'].get('description'))
         pecan.response.status = 201
         return self.format_resource(group)
