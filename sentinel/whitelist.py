@@ -14,13 +14,55 @@
 
 """Whitelist fields from OpenStack resources"""
 
+from oslo_config import cfg, types
 import pecan
+
+OPTS = [
+    cfg.ListOpt('identity_user',
+                item_type=types.String(),
+                default=['description', 'domain_id', 'email', 'enabled', 'id', 'name'],
+                help='List of fields to return for user resources from the identity service'),
+    cfg.ListOpt('identity_role',
+                item_type=types.String(),
+                default=['id', 'name'],
+                help='List of fields to return for role resources from the identity service'),
+    cfg.ListOpt('identity_group',
+                item_type=types.String(),
+                default=['description', 'domain_id', 'id', 'name'],
+                help='List of fields to return for group resources from the identity service'),
+    cfg.ListOpt('identity_project',
+                item_type=types.String(),
+                default=['description', 'domain_id', 'enabled', 'id', 'is_domain', 'name',
+                         'parents', 'parent_id', 'subtree'],
+                help='List of fields to return for project resources from the identity service'),
+    cfg.ListOpt('compute_quota_set',
+                item_type=types.String(),
+                default=['*'],
+                help='List of fields to return for quota_sets from the compute service'),
+    cfg.ListOpt('compute_server',
+                item_type=types.String(),
+                default=['created', 'flavor', 'id', 'name', 'status', 'tenant_id', 'user_id'],
+                help='List of fields to return for server resources from the compute service'),
+    cfg.ListOpt('volume_quota_set',
+                item_type=types.String(),
+                default=['*'],
+                help='List of fields to return for quota_sets from the volume service'),
+    cfg.ListOpt('network_quota',
+                item_type=types.String(),
+                default=['*'],
+                help='List of fields to return for quotas from the networking service'),
+]
+
+OPTS_GROUP = cfg.OptGroup('whitelist',
+                          title='Resource Whitelist',
+                          help='Controls which resource fields are returned to the IdP')
+
 
 class Whitelist(object):
 
     @staticmethod
-    def apply(resources, name):
-        whitelist = pecan.request.conf.get('whitelist', name).split(',')
+    def apply(resources, service, resource):
+        whitelist = getattr(pecan.request.conf.whitelist, service + '_' + resource)
 
         # Just pass everything through
         def null_whitelister(resource):

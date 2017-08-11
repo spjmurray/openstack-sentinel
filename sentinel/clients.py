@@ -24,7 +24,36 @@ from keystoneauth1.identity import v3
 from keystoneclient.v3 import client as identity_client
 from neutronclient.v2_0 import client as network_client
 from novaclient import client as compute_client
+from oslo_config import cfg
 import pecan
+
+
+OPTS = [
+    cfg.URIOpt('auth_url',
+               schemes=['https'],
+               required=True,
+               help='URL of the SP identity service'),
+    cfg.StrOpt('username',
+               required=True,
+               help='Username of an admin account on the SP cloud'),
+    cfg.StrOpt('password',
+               required=True,
+               secret=True,
+               help='Password of an admin account on the SP cloud'),
+    cfg.StrOpt('user_domain_name',
+               default='default',
+               help='Domain of an admin account user on the SP cloud'),
+    cfg.StrOpt('project_name',
+               required=True,
+               help='Project of an admin user on the SP cloud'),
+    cfg.StrOpt('project_domain_name',
+               default='default',
+               help='Domain of an admin project on the SP cloud'),
+]
+
+OPTS_GROUP = cfg.OptGroup('identity',
+                          title='Service Provider Identity Credentials',
+                          help='Admin access to the SP cloud')
 
 
 class Resource(object):
@@ -85,13 +114,12 @@ class Clients(object):
     def _session():
         """Creates an OpenStack session from configuration data"""
         conf = pecan.request.conf
-
-        required = ['auth_url', 'username', 'password', 'user_domain_name',
-                    'project_name', 'project_domain_name']
-
-        params = {x: conf.get('keystone_authtoken', x) for x in required}
-
-        auth = v3.Password(**params)
+        auth = v3.Password(auth_url=conf.identity.auth_url,
+                           username=conf.identity.username,
+                           password=conf.identity.password,
+                           user_domain_name=conf.identity.user_domain_name,
+                           project_name=conf.identity.project_name,
+                           project_domain_name=conf.identity.project_domain_name)
         return session.Session(auth=auth)
 
     @classmethod

@@ -25,6 +25,7 @@ from sentinel.scope import Scope
 class ComputeV2ServersController(BaseController):
     """Basic REST controller for server access"""
 
+    service = u'compute'
     collection = u'servers'
     resource = u'server'
 

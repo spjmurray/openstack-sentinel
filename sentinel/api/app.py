@@ -14,37 +14,22 @@
 
 """Main application entry"""
 
-import ConfigParser
 import logging
 
 import pecan
+from sentinel import log
 from sentinel.api import hooks
+from sentinel.conf import opts
 
 LOG = logging.getLogger(__name__)
-
-
-class LogFilter(logging.Filter):
-    def filter(self, record):
-        record.user = getattr(pecan.request, 'domain_id', '-')
-        return True
 
 
 def get_app():
     """Load configuration, register middleware hooks and create the application"""
 
-    conf = ConfigParser.ConfigParser()
-    conf.read('/etc/sentinel/sentinel.conf')
+    conf = opts.configure()
 
-    formater = logging.Formatter(
-        fmt='%(asctime)s.%(msecs)03d %(process)d %(levelname)s %(name)s [%(user)s] %(message)s',
-        datefmt='%Y-%m-%d %H:%M:%S')
-
-    handler = logging.FileHandler('/var/log/sentinel/sentinel.log')
-    handler.setFormatter(formater)
-    handler.addFilter(LogFilter())
-
-    logging.getLogger().addHandler(handler)
-    logging.getLogger().setLevel(logging.INFO)
+    log.init_logging(conf)
 
     LOG.info('Sentinel starting ...')
 

@@ -12,7 +12,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import ConfigParser
+import testtools
+
 from ceilometerclient.v2 import client as metering_client
 from cinderclient.v2 import client as volume_client
 from keystoneauth1 import session
@@ -20,7 +21,24 @@ from keystoneauth1.identity import v3
 from keystoneclient.v3 import client as identity_client
 from neutronclient.v2_0 import client as network_client
 from novaclient import client as compute_client
-import testtools
+from oslo_config import cfg
+from sentinel.conf import opts
+
+OPTS = [
+    cfg.URIOpt('auth_url',
+               help='URL of the sentinel identity service'),
+    cfg.StrOpt('tls_ca',
+               help='CA certificate of sentinel server'),
+    cfg.StrOpt('tls_cert',
+               help='Certificate for the sentinel client'),
+    cfg.StrOpt('tls_key',
+               help='Private key for the sentinel client'),
+]
+
+OPTS_GROUP = cfg.OptGroup('functional_test',
+                          title='Sentinel Authentication',
+                          help='Access credentials for a sentinel instance used in testing')
+
 
 class BaseClient(object):
     """Base client which creates and caches clients"""
@@ -28,8 +46,7 @@ class BaseClient(object):
     def __init__(self):
 
         # Load up the configuration
-        self.conf = ConfigParser.ConfigParser()
-        self.conf.read('/etc/sentinel/sentinel.conf')
+        self.conf = opts.configure()
 
         self._identity = None
         self._compute = None
@@ -77,11 +94,11 @@ class SentinelClient(BaseClient):
         super(SentinelClient, self).__init__()
 
     def _session(self):
-        auth = v3.Password(auth_url=self.conf.get('sentinel_auth', 'auth_uri'))
+        auth = v3.Password(auth_url=self.conf.functional_test.auth_url)
         return session.Session(auth=auth,
-                               verify=self.conf.get('sentinel_auth', 'tls_ca'),
-                               cert=(self.conf.get('sentinel_auth', 'tls_cert'),
-                                     self.conf.get('sentinel_auth', 'tls_key')))
+                               verify=self.conf.functional_test.tls_ca,
+                               cert=(self.conf.functional_test.tls_cert,
+                                     self.conf.functional_test.tls_key))
 
 
 class OpenStackClient(BaseClient):
@@ -91,10 +108,12 @@ class OpenStackClient(BaseClient):
         super(OpenStackClient, self).__init__()
 
     def _session(self):
-        required = ['auth_url', 'username', 'password', 'user_domain_name',
-                    'project_name', 'project_domain_name']
-        params = {x: self.conf.get('keystone_authtoken', x) for x in required}
-        auth = v3.Password(**params)
+        auth = v3.Password(auth_url=self.conf.identity.auth_url,
+                           username=self.conf.identity.username,
+                           password=self.conf.identity.password,
+                           user_domain_name=self.conf.identity.user_domain_name,
+                           project_name=self.conf.identity.project_name,
+                           project_domain_name=self.conf.identity.project_domain_name)
         return session.Session(auth=auth)
 
 
@@ -107,12 +126,10 @@ class FederatedUserClient(BaseClient):
         self.project = project
 
     def _session(self):
-        auth = v3.Password(auth_url=self.conf.get('keystone_authtoken', 'auth_url'),
+        auth = v3.Password(auth_url=self.conf.identity.auth_url,
                            user_id=self.user.id,
                            password='password',
-                           #user_domain_id=self.user.domain_id,
                            project_id=self.project.id)
-                           #project_domain_id=self.project.domain_id)
         return session.Session(auth=auth)
 
 

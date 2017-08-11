@@ -174,25 +174,15 @@ in order to get access to the client identity.
 ### Sentinel
 
 Sentinel's main configuration file is a simple ini based affair with many similarities
-to standard OpenStack components.  You should only need to modify the `keystone_authtoken`
+to standard OpenStack components.  You should only need to modify the `identity`
 section which identifies the SP cloud identity endpoint and administrative access
 credentials.
 
-    [keystone_authtoken]
-    auth_url = https://cloud.example.com:5000/v3
-    username = admin
-    password = password
-    user_domain_name = default
-    project_name = admin
-    project_domain_name = default
-    
-    [whitelist]
-    group = description,domain_id,id,name
-    project = description,domain_id,enabled,id,is_domain,name,parents,parent_id,subtree
-    role = id,name
-    user = description,domain_id,email,enabled,id,name
+To automatically generate the configuration template:
 
-The whitelisting depicted selects which fields are not filtered out of queries that
+    oslo-config-generator --namespace sentinel > /etc/sentinel/sentinel.conf
+
+The whitelist section selects which fields are not filtered out of queries that
 return resources or collections.  This is purely illustrative, however it gives us
 a mechanism to remove fields which are unnecessary e.g. an IdP doesn't need to know
 about hypervisors servers are resident on, and my leak information about the SP

@@ -24,6 +24,7 @@ from sentinel.decorators import supported_queries, mutate_arguments
 class IdentityV3RolesController(BaseController):
     """Controller for the roles collection"""
 
+    service = u'identity'
     collection = u'roles'
     resource = u'role'
 

@@ -23,6 +23,7 @@ from sentinel.decorators import supported_queries, mutate_arguments
 class ComputeV2QuotaSetsController(BaseController):
     """Controller for quota set resources"""
 
+    service = u'compute'
     resource = u'quota_set'
 
     def __init__(self):

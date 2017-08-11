@@ -24,6 +24,7 @@ from sentinel.decorators import supported_queries, mutate_arguments
 class IdentityV3UsersController(BaseController):
     """Controller for the users collection"""
 
+    service = u'identity'
     collection = u'users'
     resource = u'user'
 

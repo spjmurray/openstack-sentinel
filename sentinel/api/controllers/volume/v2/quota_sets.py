@@ -24,6 +24,7 @@ BAD_KEYS = ['id', 'tenant_id']
 
 class VolumeV2QuotaSetsController(base.BaseController):
 
+    service = u'volume'
     resource = u'quota_set'
 
     def __init__(self):

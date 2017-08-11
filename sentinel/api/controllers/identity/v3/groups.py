@@ -24,6 +24,7 @@ from sentinel.decorators import supported_queries, mutate_arguments
 class IdentityV3GroupsUsersController(BaseController):
     """Controller for interacting with group users"""
 
+    service = u'identity'
     collection = u'users'
     resource = u'user'
 
@@ -57,6 +58,7 @@ class IdentityV3GroupsUsersController(BaseController):
 class IdentityV3GroupsController(BaseController):
     """Controller for the groups collection"""
 
+    service = u'identity'
     collection = u'groups'
     resource = u'group'
 

@@ -24,6 +24,7 @@ from sentinel.decorators import supported_queries, mutate_arguments
 class IdentityV3ProjectsUsersRolesController(BaseController):
     """Controller for project-user roles"""
 
+    service = u'identity'
     collection = u'roles'
     resource = u'role'
 
@@ -67,6 +68,7 @@ class IdentityV3ProjectsUsersController(BaseController):
 class IdentityV3ProjectsGroupsRolesController(BaseController):
     """Controller for project-group roles"""
 
+    service = u'identity'
     collection = u'roles'
     resource = u'role'
 
@@ -110,6 +112,7 @@ class IdentityV3ProjectsGroupsController(BaseController):
 class IdentityV3ProjectsController(BaseController):
     """Controller for the projects collection"""
 
+    service = u'identity'
     collection = u'projects'
     resource = u'project'
 

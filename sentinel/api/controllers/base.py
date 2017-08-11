@@ -22,6 +22,13 @@ from sentinel.whitelist import Whitelist
 class BaseController(pecan.rest.RestController):
     """Common REST controller library functions"""
 
+    # Used by the whitelister to scope resource types to the service
+    # which avoids namespace clashes
+    service = None
+
+    # Used to render JSON responses for resources and collections.
+    # The resource type is used to identify which white list to use
+    # when filtering fields
     resource = None
     collection = None
 
@@ -63,7 +70,7 @@ class BaseController(pecan.rest.RestController):
         if not resource:
             resource = self.resource
         payload = {
-            resource: Whitelist.apply(data, resource),
+            resource: Whitelist.apply(data, self.service, resource),
         }
         return payload
 
@@ -74,7 +81,7 @@ class BaseController(pecan.rest.RestController):
         if not collection:
             collection = self.collection
         payload = {
-            collection: Whitelist.apply(data, resource),
+            collection: Whitelist.apply(data, self.service, resource),
         }
         if links:
             payload[u'links'] = {

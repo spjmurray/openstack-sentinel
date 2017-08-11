@@ -18,6 +18,11 @@ setuptools.setup(
     name = 'sentinel',
     version = '0.0.1',
     packages = setuptools.find_packages(),
+    entry_points = {
+        'oslo.config.opts': [
+            'sentinel = sentinel.conf.opts:list_opts',
+        ]
+    }
 )
 
 # vi: ts=4 et:

@@ -22,6 +22,7 @@ from sentinel.scope import Scope
 
 class NetworkV2QuotasController(base.BaseController):
 
+    service = u'network'
     resource = u'quota'
     collection = u'quotas'
 
