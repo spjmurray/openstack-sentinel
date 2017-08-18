@@ -97,6 +97,9 @@ to streamline the process.
       --depends python-novaclient \
       --depends python-neutronclient \
       --depends python-cinderclient \
+      --depends python-ceilometerclient \
+      --depends python-oslo.config \
+      --depends python-stevedore \
       .
 
 ## Configuration
