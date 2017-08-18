@@ -21,7 +21,14 @@ setuptools.setup(
     entry_points = {
         'oslo.config.opts': [
             'sentinel = sentinel.conf.opts:list_opts',
-        ]
+        ],
+        'sentinel.services': [
+            'identity = sentinel.api.controllers.identity.root:Service',
+            'compute = sentinel.api.controllers.compute.root:Service',
+            'network = sentinel.api.controllers.network.root:Service',
+            'volume = sentinel.api.controllers.volume.root:Service',
+            'metering = sentinel.api.controllers.metering.root:Service',
+        ],
     }
 )
 

@@ -14,18 +14,20 @@
 
 """Root controller for /"""
 
-from sentinel.api.controllers.compute import root as compute
-from sentinel.api.controllers.identity import root as identity
-from sentinel.api.controllers.network import root as network
-from sentinel.api.controllers.volume import root as volume
-from sentinel.api.controllers.metering import root as metering
+from stevedore import extension
+
 
 class RootController(object):
     def __init__(self):
-        self.compute = compute.ComputeController()
-        self.identity = identity.IdentityController()
-        self.network = network.NetworkController()
-        self.volume = volume.VolumeController()
-        self.metering = metering.MeteringController()
+        manager = extension.ExtensionManager(
+            namespace='sentinel.services',
+            invoke_on_load=True)
+
+        def get_controller(ext):
+            return (ext.name, ext.obj.controller())
+
+        controllers = manager.map(get_controller)
+        for name, controller in controllers:
+            setattr(self, name, controller)
 
 # vi: ts=4 et:

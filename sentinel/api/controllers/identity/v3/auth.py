@@ -15,11 +15,14 @@
 from datetime import datetime, timedelta
 import logging
 import pecan
+from stevedore import extension
 
 from sentinel.scope import Scope
 from sentinel.token import Token
 
 LOG = logging.getLogger(__name__)
+
+ENDPOINT_INTERFACES = [u'public', u'internal', u'admin']
 
 
 class IdentityV3AuthController(object):
@@ -49,75 +52,34 @@ class IdentityV3AuthController(object):
         # catalog pointing back to ourselves.
         issued = datetime.now()
         expires = issued + timedelta(0, 0, 0, 0, 0, 1, 0)
-        identity_base = '{}/identity/v3'.format(pecan.request.host_url)
-        compute_base = '{}/compute/v2'.format(pecan.request.host_url)
-        networking_base = '{}/network'.format(pecan.request.host_url)
-        volume_base = '{}/volume/v2'.format(pecan.request.host_url)
-        metering_base = '{}/metering'.format(pecan.request.host_url)
+
+        # Use stevedor to find all extensions and dynamically build the catalog
+        # from static data contained in each service object
+        manager = extension.ExtensionManager(
+            namespace='sentinel.services',
+            invoke_on_load=True)
+
+        def get_catalog(ext):
+            endpoints = []
+            for interface in ENDPOINT_INTERFACES:
+                endpoints.append({
+                    u'interface': interface,
+                    u'url': pecan.request.host_url + ext.obj.service_endpoint})
+            payload = {
+                u'name': ext.obj.service_name,
+                u'type': ext.obj.service_type,
+                u'endpoints': endpoints,
+            }
+            return payload
 
         payload = {
-            'token': {
-                'issued_at': issued.isoformat(),
-                'expires_at': expires.isoformat(),
-                'user': {
-                    'project': 'required-by-fog',
+            u'token': {
+                u'issued_at': issued.isoformat(),
+                u'expires_at': expires.isoformat(),
+                u'user': {
+                    u'project': 'required-by-fog',
                 },
-                'catalog': [
-                    {
-                        'name': 'keystone',
-                        'type': 'identity',
-                        'endpoints': [
-                            {
-                                'interface': 'public',
-                                'url': identity_base,
-                            },
-                            {
-                                'interface': 'admin',
-                                'url': identity_base,
-                            }
-                        ]
-                    },
-                    {
-                        'name': 'nova',
-                        'type': 'compute',
-                        'endpoints': [
-                            {
-                                'interface': 'public',
-                                'url': compute_base,
-                            }
-                        ]
-                    },
-                    {
-                        'name': 'neutron',
-                        'type': 'network',
-                        'endpoints': [
-                            {
-                                'interface': 'public',
-                                'url': networking_base,
-                            }
-                        ]
-                    },
-                    {
-                        'name': 'cinderv2',
-                        'type': 'volumev2',
-                        'endpoints': [
-                            {
-                                'interface': 'public',
-                                'url': volume_base,
-                            },
-                        ]
-                    },
-                    {
-                        'name': 'ceilometer',
-                        'type': 'metering',
-                        'endpoints': [
-                            {
-                                'interface': 'public',
-                                'url': metering_base,
-                            },
-                        ]
-                    },
-                ]
+                u'catalog': manager.map(get_catalog),
             }
         }
 

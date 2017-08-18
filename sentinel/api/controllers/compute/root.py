@@ -20,4 +20,14 @@ class ComputeController(object):
     def __init__(self):
         self.v2 = v2.ComputeV2Controller()
 
+
+class Service(object):
+    service_name = u'nova'
+    service_type = u'compute'
+    service_endpoint = u'/compute/v2'
+
+    @staticmethod
+    def controller():
+        return ComputeController()
+
 # vi: ts=4 et:

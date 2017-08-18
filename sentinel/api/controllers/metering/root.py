@@ -19,4 +19,14 @@ class MeteringController(object):
     def __init__(self):
         self.v2 = v2.MeteringV2Controller()
 
+
+class Service(object):
+    service_name = u'ceilometer'
+    service_type = u'metering'
+    service_endpoint = u'/metering'
+
+    @staticmethod
+    def controller():
+        return MeteringController()
+
 # vi: ts=4 et:

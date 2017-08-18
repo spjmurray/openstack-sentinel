@@ -19,5 +19,15 @@ class VolumeController(object):
     def __init__(self):
         self.v2 = v2.VolumeV2Controller()
 
+
+class Service(object):
+    service_name = u'cinderv2'
+    service_type = u'volumev2'
+    service_endpoint = u'/volume/v2'
+
+    @staticmethod
+    def controller():
+        return VolumeController()
+
 # vi: ts=4 et:
 

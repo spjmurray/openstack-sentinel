@@ -20,4 +20,13 @@ class IdentityController(object):
     def __init__(self):
         self.v3 = v3.IdentityV3Controller()
 
+class Service(object):
+    service_name = u'keystone'
+    service_type = u'identity'
+    service_endpoint = u'/identity/v3'
+
+    @staticmethod
+    def controller():
+        return IdentityController()
+
 # vi: ts=4 et:

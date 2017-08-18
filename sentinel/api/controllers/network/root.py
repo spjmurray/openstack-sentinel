@@ -23,4 +23,14 @@ class NetworkController(object):
 
 pecan.route(NetworkController, 'v2.0', v2.NetworkV2Controller())
 
+
+class Service(object):
+    service_name = u'neutron'
+    service_type = u'network'
+    service_endpoint = u'/network'
+
+    @staticmethod
+    def controller():
+        return NetworkController()
+
 # vi: ts=4 et:
