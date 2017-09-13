@@ -36,7 +36,7 @@ class ComputeV2ServersController(BaseController):
         }
 
     def _all_projects(self):
-        """Do we want all projects in out domain"""
+        """Do we want all projects in our domain"""
 
         # A basic copy of nova API
         all_projects = pecan.request.GET.get('all_tenants')
@@ -50,18 +50,34 @@ class ComputeV2ServersController(BaseController):
         """Return a detailed list of servers based on scoping requirements"""
 
         # If the client requested all projects return those within the
-        # domain scope, same applies for a domain scoped token, otherwise
-        # scope to the specifc project
-        if self._all_projects() or not pecan.request.token.project_id:
-            projects = Scope.projects()
-        else:
-            projects = [pecan.request.token.project_id]
+        # domain scope, otherwise scope to the specifc project
+        projects = Scope.projects() if self._all_projects() else [pecan.request.token.project_id]
 
         # Must do a detailed search here as it returns the tenant_id field
         servers = self.compute.servers.list(search_opts={'all_tenants': 'True'})
 
         # Filter out only servers within the IdP domain scope
-        return [x for x in servers if x.tenant_id in projects]
+        servers = [x for x in servers if x.tenant_id in projects]
+
+        # If the request features a marker, discard servers upto and including
+        # that server ID
+        marker = pecan.request.GET.get('marker')
+        if marker:
+            index = 0
+            for server in servers:
+                if server.id == marker:
+                    break
+                index += 1
+            if index == len(servers):
+                pecan.abort(400, 'Unable to locate marker')
+            servers = servers[index+1:]
+
+        # If the request features a limit, return only that number of servers
+        limit = pecan.request.GET.get('limit')
+        if limit:
+            servers = servers[:int(limit)]
+
+        return servers
 
     @pecan.expose('json')
     @pecan.decorators.accept_noncanonical
