@@ -15,11 +15,13 @@
 import pecan
 
 from sentinel.api.controllers.volume.v2 import quota_sets
+from sentinel.api.controllers.volume.v2 import volumes
 
 
 class VolumeV2Controller(object):
     def __init__(self):
-        pass
+        self.volumes = volumes.VolumeV2VolumesController()
+
 
 pecan.route(VolumeV2Controller, 'os-quota-sets', quota_sets.VolumeV2QuotaSetsController())
 

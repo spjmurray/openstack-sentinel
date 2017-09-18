@@ -111,4 +111,14 @@ class Server(FixtureBase):
             if server.status == 'ACTIVE':
                 break
 
+class Volume(FixtureBase):
+    def _setUp(self):
+        self.entity = self.client.volume.volumes.create(1, name=_get_unique_name())
+        self.addCleanup(self.entity.delete)
+        while True:
+            time.sleep(5)
+            volume = self.client.volume.volumes.get(self.entity.id)
+            if volume.status == 'available':
+                break
+
 # vi: ts=4 et:
