@@ -14,12 +14,12 @@
 
 """Root controller for /compute/v2/servers"""
 
-import oslo_utils.strutils
 import pecan
 import pecan.decorators
 
 from sentinel.api.controllers.base import BaseController
 from sentinel.scope import Scope
+from sentinel import utils
 
 
 class ComputeV2ServersController(BaseController):
@@ -35,23 +35,12 @@ class ComputeV2ServersController(BaseController):
             'metadata': ['GET'],
         }
 
-    def _all_projects(self):
-        """Do we want all projects in our domain"""
-
-        # A basic copy of nova API
-        all_projects = pecan.request.GET.get('all_tenants')
-        if all_projects:
-            return oslo_utils.strutils.bool_from_string(all_projects, True)
-
-        # An empty string is considered consent
-        return 'all_tenants' in pecan.request.GET
-
     def _scoped_servers(self):
         """Return a detailed list of servers based on scoping requirements"""
 
         # If the client requested all projects return those within the
         # domain scope, otherwise scope to the specifc project
-        projects = Scope.projects() if self._all_projects() else [pecan.request.token.project_id]
+        projects = Scope.projects() if utils.all_projects() else [pecan.request.token.project_id]
 
         # Must do a detailed search here as it returns the tenant_id field
         servers = self.compute.servers.list(search_opts={'all_tenants': 'True'})

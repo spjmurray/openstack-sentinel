@@ -121,4 +121,9 @@ class Volume(FixtureBase):
             if volume.status == 'available':
                 break
 
+class Image(FixtureBase):
+    def _setUp(self):
+        self.entity = self.client.image.images.create(name=_get_unique_name())
+        self.addCleanup(self.client.image.images.delete, self.entity.id)
+
 # vi: ts=4 et:

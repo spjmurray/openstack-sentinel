@@ -12,10 +12,10 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import oslo_utils.strutils
 import pecan
 import pecan.decorators
 
+from sentinel import utils
 from sentinel.api.controllers import base
 from sentinel.scope import Scope
 
@@ -31,21 +31,10 @@ class VolumeV2VolumesController(base.BaseController):
             'detail': ['GET'],
         }
 
-    def _all_projects(self):
-        """Do we want all projects in our domain"""
-
-        # A basic copy of nova API
-        all_projects = pecan.request.GET.get('all_tenants')
-        if all_projects:
-            return oslo_utils.strutils.bool_from_string(all_projects, True)
-
-        # An empty string is considered consent
-        return 'all_tenants' in pecan.request.GET
-
     def _scoped_volumes(self):
         # If the client requested all projects return those within the
         # domain scope, otherwise scope to the specifc project.  This is undocumented!
-        projects = Scope.projects() if self._all_projects() else [pecan.request.token.project_id]
+        projects = Scope.projects() if utils.all_projects() else [pecan.request.token.project_id]
 
         # Load up detailed volume data as it contains project ID
         # NOTE: all_tenants is required, but not documented!!
@@ -76,7 +65,7 @@ class VolumeV2VolumesController(base.BaseController):
 
     @pecan.expose('json')
     @pecan.decorators.accept_noncanonical
-    def get_all(self, project):
+    def get_all(self):
         volumes = self._scoped_volumes()
         volumes = [{'id': x.id, 'name': x.name} for x in volumes]
         return self.format_resource(volumes)

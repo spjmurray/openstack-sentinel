@@ -19,6 +19,7 @@ Simple wrappers around OpenStack client libraries
 import copy
 from ceilometerclient.v2 import client as metering_client
 from cinderclient.v2 import client as volume_client
+from glanceclient.v2 import client as image_client
 from keystoneauth1 import session
 from keystoneauth1.identity import v3
 from keystoneclient.v3 import client as identity_client
@@ -146,5 +147,10 @@ class Clients(object):
     def metering(cls):
         """Creates a Ceilometer client"""
         return metering_client.Client(session=cls._session())
+
+    @classmethod
+    def image(cls):
+        """Creates a Glance client"""
+        return image_client.Client(session=cls._session())
 
 # vi: ts=4 et:

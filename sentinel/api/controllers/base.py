@@ -65,6 +65,11 @@ class BaseController(pecan.rest.RestController):
         """Get a metering client"""
         return self._get_client('metering')
 
+    @property
+    def image(self):
+        """Get an image client"""
+        return self._get_client('image')
+
     def format_resource(self, data, resource=None):
         """Format a resource"""
         if not resource:

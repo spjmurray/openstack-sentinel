@@ -12,8 +12,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from novaclient import exceptions
-
 from sentinel.tests.functional import base, matchers
 from sentinel.tests.functional import client_fixtures as fixtures
 
@@ -35,11 +33,19 @@ class ComputeV2ServersTestCase(base.BaseTestCase):
         self.assertThat(server2.entity, matchers.IsInCollection(servers))
         self.assertThat(server3.entity, matchers.IsNotInCollection(servers))
         # Test limits
-        servers = sentinel.compute.servers.list(search_opts={'all_tenants': 'True'}, limit=1)
+        servers = sentinel.compute.servers.list(
+            search_opts={'all_tenants': 'True'},
+            limit=1)
         self.assertEqual(len(servers), 1)
-        servers = sentinel.compute.servers.list(search_opts={'all_tenants': 'True'}, marker=servers[0].id, limit=1)
+        servers = sentinel.compute.servers.list(
+            search_opts={'all_tenants': 'True'},
+            marker=servers[0].id,
+            limit=1)
         self.assertEqual(len(servers), 1)
-        servers = sentinel.compute.servers.list(search_opts={'all_tenants': 'True'}, marker=servers[0].id, limit=1)
+        servers = sentinel.compute.servers.list(
+            search_opts={'all_tenants': 'True'},
+            marker=servers[0].id,
+            limit=1)
         self.assertEqual(len(servers), 0)
 
 # vi: ts=4 et:

@@ -28,6 +28,7 @@ setuptools.setup(
             'network = sentinel.api.controllers.network.root:Service',
             'volume = sentinel.api.controllers.volume.root:Service',
             'metering = sentinel.api.controllers.metering.root:Service',
+            'image = sentinel.api.controllers.image.root:Service',
         ],
     }
 )

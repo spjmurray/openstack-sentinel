@@ -33,11 +33,19 @@ class VolumeV2VolumesTestCase(base.BaseTestCase):
         self.assertThat(volume2.entity, matchers.IsInCollection(volumes))
         self.assertThat(volume3.entity, matchers.IsNotInCollection(volumes))
         # Test limits
-        volumes = sentinel.volume.volumes.list(search_opts={'all_tenants': 'True'}, limit=1)
+        volumes = sentinel.volume.volumes.list(
+            search_opts={'all_tenants': 'True'},
+            limit=1)
         self.assertEqual(len(volumes), 1)
-        volumes = sentinel.volume.volumes.list(search_opts={'all_tenants': 'True'}, marker=volumes[0].id, limit=1)
+        volumes = sentinel.volume.volumes.list(
+            search_opts={'all_tenants': 'True'},
+            marker=volumes[0].id,
+            limit=1)
         self.assertEqual(len(volumes), 1)
-        volumes = sentinel.volume.volumes.list(search_opts={'all_tenants': 'True'}, marker=volumes[0].id, limit=1)
+        volumes = sentinel.volume.volumes.list(
+            search_opts={'all_tenants': 'True'},
+            marker=volumes[0].id,
+            limit=1)
         self.assertEqual(len(volumes), 0)
 
 # vi: ts=4 et:

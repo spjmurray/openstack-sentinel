@@ -16,6 +16,7 @@ import testtools
 
 from ceilometerclient.v2 import client as metering_client
 from cinderclient.v2 import client as volume_client
+from glanceclient.v2 import client as image_client
 from keystoneauth1 import session
 from keystoneauth1.identity import v3
 from keystoneclient.v3 import client as identity_client
@@ -53,6 +54,7 @@ class BaseClient(object):
         self._network = None
         self._volume = None
         self._metering = None
+        self._image = None
 
     @property
     def identity(self):
@@ -83,6 +85,12 @@ class BaseClient(object):
         if not self._metering:
             self._metering = metering_client.Client(session=self._session())
         return self._metering
+
+    @property
+    def image(self):
+        if not self._image:
+            self._image = image_client.Client(session=self._session())
+        return self._image
 
     def _session(self):
         pass
