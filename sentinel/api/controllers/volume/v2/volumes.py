@@ -43,25 +43,8 @@ class VolumeV2VolumesController(base.BaseController):
         # Filter out volumes not in scope, stupid inconsistencies yet again
         volumes = [x for x in volumes if getattr(x, 'os-vol-tenant-attr:tenant_id') in projects]
 
-        # If the request features a marker reject all volumes upto and including
-        # that ID
-        marker = pecan.request.GET.get('marker')
-        if marker:
-            index = 0
-            for volume in volumes:
-                if volume.id == marker:
-                    break
-                index += 1
-            if index == len(volumes):
-                pecan.abort(400, 'Unable to locate marker')
-            volumes = volumes[index+1:]
-
-        # If the request features a limit return upto that many volumes
-        limit = pecan.request.GET.get('limit')
-        if limit:
-            volumes = volumes[:int(limit)]
-
-        return volumes
+        return utils.paginate(volumes, pecan.request.GET.get('marker'),
+                              pecan.request.GET.get('limit'))
 
     @pecan.expose('json')
     @pecan.decorators.accept_noncanonical

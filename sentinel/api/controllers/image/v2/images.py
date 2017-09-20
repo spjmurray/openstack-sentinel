@@ -33,25 +33,8 @@ class ImageV2ImagesController(BaseController):
         # Filter out images not in scope, stupid inconsistencies yet again
         images = [x for x in images if x.owner in projects]
 
-        # If the request features a marker reject all images upto and including
-        # that ID
-        marker = pecan.request.GET.get('marker')
-        if marker:
-            index = 0
-            for image in images:
-                if image.id == marker:
-                    break
-                index += 1
-            if index == len(images):
-                pecan.abort(400, 'Unable to locate marker')
-            images = images[index+1:]
-
-        # If the request features a limit return upto that many images
-        limit = pecan.request.GET.get('limit')
-        if limit:
-            images = images[:int(limit)]
-
-        return images
+        return utils.paginate(images, pecan.request.GET.get('marker'),
+                              pecan.request.GET.get('limit'))
 
     @pecan.expose('json')
     @pecan.decorators.accept_noncanonical

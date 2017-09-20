@@ -47,4 +47,22 @@ def unglancify(resources):
     return [Resource(x) for x in resources]
 
 
+def paginate(collection, marker=None, limit=None):
+    # If the request features a marker reject all reources upto and including that ID
+    if marker:
+        index = 0
+        for index in range(0, len(collection)):
+            if collection[index].id == marker:
+                break
+        else:
+            pecan.abort(400, 'Unable to locate marker')
+        collection = collection[index+1:]
+
+    # If the request features a limit return upto that many resources
+    if limit:
+        collection = collection[:int(limit)]
+
+    return collection
+
+
 # vi: ts=4 et:

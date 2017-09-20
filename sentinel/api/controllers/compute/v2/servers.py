@@ -48,25 +48,8 @@ class ComputeV2ServersController(BaseController):
         # Filter out only servers within the IdP domain scope
         servers = [x for x in servers if x.tenant_id in projects]
 
-        # If the request features a marker, discard servers upto and including
-        # that server ID
-        marker = pecan.request.GET.get('marker')
-        if marker:
-            index = 0
-            for server in servers:
-                if server.id == marker:
-                    break
-                index += 1
-            if index == len(servers):
-                pecan.abort(400, 'Unable to locate marker')
-            servers = servers[index+1:]
-
-        # If the request features a limit, return only that number of servers
-        limit = pecan.request.GET.get('limit')
-        if limit:
-            servers = servers[:int(limit)]
-
-        return servers
+        return utils.paginate(servers, pecan.request.GET.get('marker'),
+                              pecan.request.GET.get('limit'))
 
     @pecan.expose('json')
     @pecan.decorators.accept_noncanonical
