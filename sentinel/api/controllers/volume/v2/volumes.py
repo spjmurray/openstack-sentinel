@@ -32,17 +32,14 @@ class VolumeV2VolumesController(base.BaseController):
         }
 
     def _scoped_volumes(self):
-        # If the client requested all projects return those within the
-        # domain scope, otherwise scope to the specifc project.  This is undocumented!
-        projects = Scope.projects() if utils.all_projects() else [pecan.request.token.project_id]
+        # If project scoped explicitly set the project list
+        projects = None if utils.all_projects() else [pecan.request.token.project_id]
 
         # Load up detailed volume data as it contains project ID
         # NOTE: all_tenants is required, but not documented!!
         volumes = self.volume.volumes.list(search_opts={'all_tenants': 'True'})
 
-        # Filter out volumes not in scope, stupid inconsistencies yet again
-        volumes = [x for x in volumes if getattr(x, 'os-vol-tenant-attr:tenant_id') in projects]
-
+        volumes = Scope.filter(volumes, projects=projects, key='os-vol-tenant-attr:tenant_id')
         return utils.paginate(volumes, pecan.request.GET.get('marker'),
                               pecan.request.GET.get('limit'))
 

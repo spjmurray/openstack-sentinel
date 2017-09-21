@@ -27,12 +27,10 @@ class ImageV2ImagesController(BaseController):
     resource = u'image'
 
     def _scoped_images(self):
-        projects = Scope.projects()
+        # Ensure we have a list of Resource like objects
         images = utils.unglancify(self.image.images.list())
 
-        # Filter out images not in scope, stupid inconsistencies yet again
-        images = [x for x in images if x.owner in projects]
-
+        images = Scope.filter(images, key='owner')
         return utils.paginate(images, pecan.request.GET.get('marker'),
                               pecan.request.GET.get('limit'))
 

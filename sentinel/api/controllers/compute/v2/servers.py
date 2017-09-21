@@ -38,16 +38,13 @@ class ComputeV2ServersController(BaseController):
     def _scoped_servers(self):
         """Return a detailed list of servers based on scoping requirements"""
 
-        # If the client requested all projects return those within the
-        # domain scope, otherwise scope to the specifc project
-        projects = Scope.projects() if utils.all_projects() else [pecan.request.token.project_id]
+        # If project scoped explicitly set the project list
+        projects = None if utils.all_projects() else [pecan.request.token.project_id]
 
         # Must do a detailed search here as it returns the tenant_id field
         servers = self.compute.servers.list(search_opts={'all_tenants': 'True'})
 
-        # Filter out only servers within the IdP domain scope
-        servers = [x for x in servers if x.tenant_id in projects]
-
+        servers = Scope.filter(servers, projects=projects)
         return utils.paginate(servers, pecan.request.GET.get('marker'),
                               pecan.request.GET.get('limit'))
 

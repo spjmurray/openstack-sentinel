@@ -37,20 +37,23 @@ class Scope(object):
         return [x.id for x in projects]
 
     @classmethod
-    def filter(cls, resources):
+    def filter(cls, resources, projects=None, key=None):
         """Filter collections based on project ID"""
 
         # Nothing to do
         if not resources:
             return []
 
-        # Gather projects
-        projects = cls.projects()
+        # Gather projects if not explicitly stated
+        if not projects:
+            projects = cls.projects()
 
         # Hack around the fact that OpenStack is a totally inconsistent mess
-        project_property = 'project_id'
-        if not hasattr(resources[0], 'project_id'):
-            project_property = 'tenant_id'
-        return [x for x in resources if getattr(x, project_property) in projects]
+        if not key:
+            key = 'project_id'
+            if not hasattr(resources[0], key):
+                key = 'tenant_id'
+
+        return [x for x in resources if getattr(x, key) in projects]
 
 # vi: ts=4 et:
