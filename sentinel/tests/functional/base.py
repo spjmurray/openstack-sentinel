@@ -24,6 +24,7 @@ from neutronclient.v2_0 import client as network_client
 from novaclient import client as compute_client
 from oslo_config import cfg
 from sentinel.conf import opts
+from sentinel import adaptors
 
 OPTS = [
     cfg.URIOpt('auth_url',
@@ -39,6 +40,12 @@ OPTS = [
 OPTS_GROUP = cfg.OptGroup('functional_test',
                           title='Sentinel Authentication',
                           help='Access credentials for a sentinel instance used in testing')
+
+
+@adaptors.rawclientadaptor
+class NeutronClient(network_client.Client):
+    """Wrapped neutron client which returns Resources not raw data"""
+    pass
 
 
 class BaseClient(object):
@@ -71,7 +78,7 @@ class BaseClient(object):
     @property
     def network(self):
         if not self._network:
-            self._network = network_client.Client(session=self._session())
+            self._network = NeutronClient(session=self._session())
         return self._network
 
     @property

@@ -62,6 +62,10 @@ OPTS = [
                 item_type=types.String(),
                 default=['*'],
                 help='List of fields to return for quotas from the networking service'),
+    cfg.ListOpt('network_floatingip',
+                item_type=types.String(),
+                default=['*'],
+                help='List of fields to return for floatingips from the networking service'),
 ]
 
 OPTS_GROUP = cfg.OptGroup('whitelist',

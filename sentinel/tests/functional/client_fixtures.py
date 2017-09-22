@@ -126,4 +126,20 @@ class Image(FixtureBase):
         self.entity = self.client.image.images.create(name=_get_unique_name())
         self.addCleanup(self.client.image.images.delete, self.entity.id)
 
+class FloatingIP(FixtureBase):
+    def _setUp(self):
+        providers = self.client.network.list_networks(_params={'router:external': 'True'})
+        body = {
+            "floatingip": {
+                "floating_network_id": providers[0].id,
+            }
+        }
+        self.entity = self.client.network.create_floatingip(body=body)
+        self.addCleanup(self.client.network.delete_floatingip, self.entity.id)
+        while True:
+            time.sleep(5)
+            floatingip = self.client.network.show_floatingip(self.entity.id)
+            if floatingip.status == 'DOWN':
+                break;
+
 # vi: ts=4 et:

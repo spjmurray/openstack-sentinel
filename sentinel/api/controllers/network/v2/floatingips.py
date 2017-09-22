@@ -12,13 +12,24 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from sentinel.api.controllers.network.v2 import floatingips
-from sentinel.api.controllers.network.v2 import quotas
+import pecan
+import pecan.decorators
+
+from sentinel.api.controllers.base import BaseController
+from sentinel.scope import Scope
 
 
-class NetworkV2Controller(object):
-    def __init__(self):
-        self.floatingips = floatingips.NetworkV2FloatingipsController()
-        self.quotas = quotas.NetworkV2QuotasController()
+class NetworkV2FloatingipsController(BaseController):
+
+    service = u'network'
+    resource = u'floatingip'
+    collection = u'floatingips'
+
+    @pecan.expose('json')
+    @pecan.decorators.accept_noncanonical
+    def get_all(self):
+        floatingips = Scope.filter(self.network.list_floatingips())
+        return self.format_collection(floatingips, links=False)
 
 # vi: ts=4 et:
+

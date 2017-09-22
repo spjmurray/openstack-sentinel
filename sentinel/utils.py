@@ -15,7 +15,7 @@
 import oslo_utils.strutils
 import pecan
 
-from sentinel.clients import Resource
+from sentinel.adaptors import Resource
 
 
 def check_permissions(*resources):

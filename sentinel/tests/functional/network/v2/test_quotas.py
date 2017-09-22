@@ -40,7 +40,7 @@ class NetworkV2QuotasTestCase(base.BaseTestCase):
     def test_quotas_update(self):
         project = self.useFixture(fixtures.Project(self.sentinel))
         quota = self.sentinel.network.update_quota(project.entity.id, TEST_QUOTA_BODY)
-        self.assertEqual(quota['quota']['network'], TEST_QUOTA)
+        self.assertEqual(quota.network, TEST_QUOTA)
 
     def test_quotas_update_taint(self):
         project = self.useFixture(fixtures.Project(self.openstack))
@@ -84,12 +84,12 @@ class NetworkV2QuotasTestCase(base.BaseTestCase):
         project = self.useFixture(fixtures.Project(self.sentinel))
         self.sentinel.network.update_quota(project.entity.id, TEST_QUOTA_BODY)
         quotas = self.sentinel.network.list_quotas()
-        self.assertEqual(len(quotas['quotas']), 1)
+        self.assertEqual(len(quotas), 1)
 
     def test_quotas_list_filtering(self):
         project = self.useFixture(fixtures.Project(self.openstack))
         self.openstack.network.update_quota(project.entity.id, TEST_QUOTA_BODY)
         quotas = self.sentinel.network.list_quotas()
-        self.assertEqual(len(quotas['quotas']), 0)
+        self.assertEqual(len(quotas), 0)
 
 # vi: ts=4 et:

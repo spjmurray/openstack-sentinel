@@ -16,7 +16,6 @@
 Simple wrappers around OpenStack client libraries
 """
 
-import copy
 from ceilometerclient.v2 import client as metering_client
 from cinderclient.v2 import client as volume_client
 from glanceclient.v2 import client as image_client
@@ -27,6 +26,8 @@ from neutronclient.v2_0 import client as network_client
 from novaclient import client as compute_client
 from oslo_config import cfg
 import pecan
+
+from sentinel import adaptors
 
 
 OPTS = [
@@ -57,52 +58,7 @@ OPTS_GROUP = cfg.OptGroup('identity',
                           help='Admin access to the SP cloud')
 
 
-class Resource(object):
-    """Base reource type conforming to the keystone/nova API"""
-
-    def __init__(self, info):
-        self._info = info
-        for i in info:
-            setattr(self, i, info[i])
-
-    def to_dict(self):
-        return copy.deepcopy(self._info)
-
-
-def rawclientadaptor(cls):
-    """Wraps clients returning raw data so they return resources"""
-
-    class Wrapper(object):
-        def __init__(self, *args, **kwargs):
-            self.wrapped = cls(*args, **kwargs)
-
-        def __getattr__(self, name):
-            # Look for functions being accessed
-            attr = getattr(self.wrapped, name)
-            if not callable(attr):
-                return attr
-
-            # And wrap them up so we can post process the results
-            def call(*args, **kwargs):
-                """
-                Decorator which looks for raw OpenStack responses e.g. '{"routers":[...]}'
-                And returns a single or list of Resource types for single resources and
-                collections respectively
-                """
-                ret = attr(*args, **kwargs)
-                if isinstance(ret, dict):
-                    res = ret[ret.keys()[0]]
-                    if isinstance(res, list):
-                        return [Resource(x) for x in res]
-                    return Resource(res)
-                return ret
-
-            return call
-
-    return Wrapper
-
-
-@rawclientadaptor
+@adaptors.rawclientadaptor
 class NeutronClient(network_client.Client):
     """Wrapped neutron client which returns Resources not raw data"""
     pass
